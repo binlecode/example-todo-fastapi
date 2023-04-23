@@ -1,0 +1,33 @@
+# this is based on official fastapi gitignore
+# Ref: https://raw.githubusercontent.com/tiangolo/fastapi/master/.gitignore
+
+# sqlite db file
+sqlite.db
+
+# below is from template
+
+.idea
+.ipynb_checkpoints
+.mypy_cache
+.vscode
+__pycache__
+.pytest_cache
+htmlcov
+dist
+site
+.coverage
+coverage.xml
+.netlify
+test.db
+log.txt
+Pipfile.lock
+env3.*
+env
+docs_build
+venv
+docs.zip
+archive.zip
+
+# vim temporary files
+*~
+.*.sw?
