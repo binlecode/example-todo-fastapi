@@ -22,7 +22,7 @@ router = APIRouter(prefix="/api/auth", dependencies=[])
 
 
 @router.post("/token", response_model=schemas.Token)
-async def login_for_token(
+def login_for_token(
     form_data: OAuth2PasswordRequestForm = Depends(OAuth2PasswordRequestForm),
     db: Session = Depends(get_db),
 ):
@@ -40,19 +40,16 @@ async def login_for_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.get("/me", response_model=schemas.UserRead)
-async def read_logged_in_user(
+# define a token-to-user interceptor as a dependency function
+# this is to be used for all route functions that requires token-user check
+# throws 401 if check not successful
+#
+# by OAuth2 spec, any HTTP error status 401 returns a `WWW-Authenticate` header
+# in our case (Bearer token), the value should be set to "Bearer"
+#
+def get_current_user_by_token(
     token: str = Depends(schemas.oauth2_password_scheme), db: Session = Depends(get_db)
 ):
-    current_user = get_current_user_by_token(token, db)
-    return current_user
-
-
-# todo: move this to a service layer code
-# by OAuth2 spec,
-# any HTTP error status 401 is supposed to also return a `WWW-Authenticate` header
-# in our case (Bearer token), the value should be set to "Bearer"
-def get_current_user_by_token(token: str, db: Session):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid authentication credentials",
@@ -69,3 +66,11 @@ def get_current_user_by_token(token: str, db: Session):
     if user is None:
         raise credentials_exception
     return user
+
+
+@router.get("/me", response_model=schemas.UserRead)
+def read_logged_in_user(
+    current_user: User = Depends(get_current_user_by_token),
+    db: Session = Depends(get_db),
+):
+    return current_user

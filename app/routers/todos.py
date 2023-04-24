@@ -3,16 +3,18 @@ from fastapi import HTTPException, status
 
 from sqlalchemy.orm import Session
 
-from app.db import get_db
+from ..db import get_db
+from ..models import User
 from .. import schemas
 from .. import crud
+from .auth import get_current_user_by_token
 
 router = APIRouter(prefix="/api/todos", dependencies=[])
 
 
 # @router.get("/", response_model=list[schemas.TodoReadNested])
 @router.get("/", response_model=list[schemas.TodoRead])
-async def read_todos(
+def read_todos(
     user_id: int = None, offset: int = 0, limit: int = 10, db: Session = Depends(get_db)
 ):
     if user_id:
@@ -24,7 +26,7 @@ async def read_todos(
 
 # @router.get("/{id}", response_model=schemas.TodoRead)
 @router.get("/{id}", response_model=schemas.TodoReadNested)
-async def read_todo(id: int, db: Session = Depends(get_db)):
+def read_todo(id: int, db: Session = Depends(get_db)):
     todo = crud.get_todo(db, id)
     if not todo:
         raise HTTPException(
@@ -33,11 +35,14 @@ async def read_todo(id: int, db: Session = Depends(get_db)):
     return todo
 
 
+# secured by token
 @router.post("/", response_model=schemas.TodoRead, status_code=status.HTTP_201_CREATED)
-async def create_todo(
-    todo_data: schemas.TodoCreate, owner_id: int, db: Session = Depends(get_db)
+def create_todo(
+    todo_data: schemas.TodoCreate,
+    current_user: User = Depends(get_current_user_by_token),
+    db: Session = Depends(get_db),
 ):
-    owner = crud.get_user(db, owner_id)
+    owner = current_user
     if not owner:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Owner not found"
@@ -47,9 +52,13 @@ async def create_todo(
     return todo
 
 
+# secured by token
 @router.put("/{id}", response_model=schemas.TodoRead, status_code=status.HTTP_200_OK)
-async def update_todo(
-    id: str, todo_data: schemas.TodoUpdate, db: Session = Depends(get_db)
+def update_todo(
+    id: str,
+    todo_data: schemas.TodoUpdate,
+    current_user: User = Depends(get_current_user_by_token),
+    db: Session = Depends(get_db),
 ):
     todo = crud.update_todo(db, id, todo_data)
     return todo

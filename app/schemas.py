@@ -12,6 +12,11 @@ OAUTH2_TOKEN_URL = "/api/auth/token"
 oauth2_password_scheme = OAuth2PasswordBearer(tokenUrl=OAUTH2_TOKEN_URL)
 
 
+class HealthInfo(BaseModel):
+    name: str
+    version: str
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str
