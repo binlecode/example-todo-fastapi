@@ -7,8 +7,8 @@ function.
 
 Fastapi has built-in OAuth 2 password flow user authentication support, it is
 used in this app for token based access control.
-See 
 
+## environment setup
 
 ```sh
 # use sqlalchemy for data models
@@ -27,7 +27,7 @@ pip install "passlib[bcrypt]"
 pip install "python-jose[cryptography]"
 ```
 
-
+## run local app
 
 ```sh
 uvicorn app.main:app --reload
@@ -35,9 +35,8 @@ uvicorn app.main:app --reload
 RESET_DB=true uvicorn app.main:app --reload
 ```
 
-
 ## pydantic
 
-To convert Sqlalchemy orm model data into pydantic validation schema, 
+To convert Sqlalchemy orm model data into pydantic validation schema,
 the schema (pydantic model) has to load custom config with `orm_mode = True`.
 
