@@ -19,3 +19,21 @@ async def signup(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
         )
     signed_up_user = crud.create_user(db, user_data)
     return signed_up_user
+
+
+# @router.get("/", response_model=list[schemas.TodoReadNested])
+@router.get("/", response_model=list[schemas.UserRead])
+async def read_users(offset: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+    users = crud.get_users(db, offset=offset, limit=limit)
+    return users
+
+
+# @router.get("/{id}", response_model=schemas.TodoRead)
+@router.get("/{id}", response_model=schemas.UserReadNested)
+async def read_user(id: int, db: Session = Depends(get_db)):
+    user = crud.get_user(db, id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
+    return user

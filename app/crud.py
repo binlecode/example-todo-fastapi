@@ -43,11 +43,11 @@ def create_todo(db: Session, owner_user: User, todo_data: schemas.TodoCreate):
     )
     db.add(todo)
     db.commit()
-    db.refresh()
+    db.refresh(todo)
     return todo
 
 
-def update_todo(db: Session, todo_data: schemas.TodoUpdate):
+def update_todo(db: Session, id: str, todo_data: schemas.TodoUpdate):
     todo = db.query(Todo).filter(Todo.id == id).first()
     todo.text = todo_data.text
     todo.completed = todo_data.completed

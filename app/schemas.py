@@ -33,7 +33,7 @@ class UserRead(UserBase):
 
 class TodoCreate(BaseModel):
     text: str
-    completed: bool
+    completed: bool = False
 
 
 class TodoUpdate(TodoCreate):
