@@ -5,6 +5,16 @@
 from datetime import datetime
 from pydantic import BaseModel
 from pydantic import EmailStr
+from fastapi.security.oauth2 import OAuth2PasswordBearer
+
+## OAuth 2 access token
+OAUTH2_TOKEN_URL = "/api/auth/token"
+oauth2_password_scheme = OAuth2PasswordBearer(tokenUrl=OAUTH2_TOKEN_URL)
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
 
 
 ## User schemas

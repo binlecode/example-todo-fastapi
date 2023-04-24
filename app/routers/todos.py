@@ -48,6 +48,8 @@ async def create_todo(
 
 
 @router.put("/{id}", response_model=schemas.TodoRead, status_code=status.HTTP_200_OK)
-async def update_todo(id: str, todo_data: schemas.TodoUpdate, db: Session = Depends(get_db)):
+async def update_todo(
+    id: str, todo_data: schemas.TodoUpdate, db: Session = Depends(get_db)
+):
     todo = crud.update_todo(db, id, todo_data)
     return todo

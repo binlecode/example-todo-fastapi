@@ -1,7 +1,7 @@
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import users, todos
+from .routers import auth, users, todos
 from .db_migration import init_tables, migrate_data
 
 
@@ -36,6 +36,7 @@ async def read_root_async():
     return {"hello": "fastapi async!"}
 
 
+app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(todos.router)
 
