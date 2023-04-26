@@ -1,13 +1,19 @@
+import logging
 from .db import engine
 from .models import Base
 from .db import SessionLocal
 from .models import User, Todo
+from config import Config
+
+
+logging.basicConfig(level=Config.LOG_LEVEL)
+logger = logging.getLogger(__name__)
 
 
 def init_tables():
-    print(">> sqlalchemy dropping existing tables")
+    logger.info(">> sqlalchemy dropping existing tables")
     Base.metadata.drop_all(engine)
-    print(">> sqlalchemy creating tables")
+    logger.info(">> sqlalchemy creating tables")
     Base.metadata.create_all(engine)
 
 

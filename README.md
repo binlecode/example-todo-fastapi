@@ -22,6 +22,7 @@ Or, install manually for newer lib versions for development / upgrade:
 # use sqlalchemy for data models
 pip install sqlalchemy
 pip install fastapi
+pip install python-dotenv
 # install multipart support for form and file post
 pip install python-multipart
 pip install pydantic "pydantic[email]"
@@ -48,6 +49,11 @@ uvicorn --reload --host $HOST --port $PORT --log-level $LOG_LEVEL "$APP_MODULE"
 RESET_DB=true uvicorn app.main:app --reload
 ```
 
+## Openapi doc
+
+Openapi doc is auto-generated at `http://<host>:<port>/docs`.
+
+
 ## pydantic
 
 To convert Sqlalchemy orm model data into pydantic validation schema,
@@ -63,26 +69,41 @@ For a container image, the start CMD can run uvicorn in single process:
 exec uvicorn --reload --host $HOST --port $PORT --log-level $LOG_LEVEL "$APP_MODULE"
 ```
 
+Note, if container is behind a TLS Termination Proxy (load balancer) like Nginx
+or Traefik, add the option `--proxy-headers` to the CMD.
+
+This option tells Uvicorn to trust the headers sent by that proxy telling it
+that the application is running behind HTTPS.
+
+```sh
+CMD ["uvicorn", "app.main:app", "--proxy-headers", "--host", "0.0.0.0", "--port", "80"]
+```
+
 See [unicorn-start-reload](./uvicorn-start-reload.sh) shell script for details.
 
 This should be fine for simple use cases where the load is light and container
-resource allocation is moderate (low resource values of virtual cpu and ram).
+resource allocation is moderate (low resource values of virtual cpu, aka
+equal or less than 1 vcpu).
 
 For performance intensive use cases, such as highly concurrent requests and
-processing intensive services, we should consider multi-process service 
+processing intensive services, we should consider multi-process service
 in a container.
 
 Uvicorn could run with `--workers` option to enable multiple workers,
 but it does not provide any process monitoring or management, thus it is not
 suitable for production.
 
-Since Gunicorn can be used as a process manager, it is common practice to use 
-Gunicorn to manage Uvicorn worker-class processes.
-Gunicorn will recycle dead processes and restart new processes.
+It is common practice to use Gunicorn to manage Uvicorn worker-class processes:
+
+- Gunicorn can be used as a process manager, it can recycle dead processes
+  and restart new processes
+- Uvicorn can work as a Gunicorn compatible worker class, so that a uvicorn
+  worker process can be managed by Gunicorn
+
 Ref: https://fastapi.tiangolo.com/deployment/server-workers/#gunicorn-with-uvicorn-workers
 
-In production environemnt where multiple cpu cores are available for a container,
-the container start CMD can be:
+In deployment environemnt where multiple cpu cores are available for a container,
+the start CMD can be:
 
 ```sh
 # set workers number to a static number, which should be equal or less than cpu core number
@@ -94,17 +115,21 @@ gunicorn app.main:app -c gunicorn_conf.py --worker-class uvicorn.workers.Uvicorn
 
 See [start.sh](./start.sh) script for details.
 
-
 Note that Fastapi's on_event("startup") handler will run for each worker
 during app startup.
 
-build image:
+## build image and run container
+
+build docker image with [Dockerfile](./Dockerfile)
 
 ```sh
 docker build -t example-todo-fastapi .
 ```
 
-run locally:
+In this Dockerfile, a local sqlite.db file is copied over to bypass external
+database dependency.
+
+run container locally:
 
 ```sh
 docker run -d --name example-todo-fastapi -p 80:80 example-todo-fastapi
@@ -119,3 +144,9 @@ curl -X 'GET' 'http://127.0.0.1/openapi.json' -H 'accept: application/json' | jq
 ```
 
 or use browser to hit url: http://127.0.0.1/docs
+
+## References
+
+### fastapi docker github
+
+https://github.com/tiangolo/uvicorn-gunicorn-docker

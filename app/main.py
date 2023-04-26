@@ -1,9 +1,14 @@
 import os
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import auth, users, todos
 from .db_migration import init_tables, migrate_data
 from . import schemas
+from config import Config
+
+logging.basicConfig(level=Config.LOG_LEVEL)
+logger = logging.getLogger(__name__)
 
 
 app = FastAPI(
@@ -47,7 +52,7 @@ app.include_router(todos.router)
 def on_startup_event():
     # perform database initialization and data load
     if os.environ.get("RESET_DB"):
-        print(">> initializing tables")
+        logger.info(">> initializing tables")
         init_tables()
-        print(">> loading initial data")
+        logger.info(">> loading initial data")
         migrate_data()

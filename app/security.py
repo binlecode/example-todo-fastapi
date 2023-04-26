@@ -1,9 +1,14 @@
+import logging
+from datetime import datetime, timedelta
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from .models import User
+from config import Config
 
-from datetime import datetime, timedelta
+logging.basicConfig(level=Config.LOG_LEVEL)
+logger = logging.getLogger(__name__)
+
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -18,7 +23,7 @@ def verify_password(plain_password, hashed_password):
 
 def authenticate_user(db: Session, email: str, password: str):
     user = db.query(User).filter(User.email == email).first()
-    print(f">>>> authenticate user: {user}")
+    logger.info(f">> authenticate user: {user}")
     if not user:
         return False
     if not verify_password(password, user.hashed_password):
@@ -38,8 +43,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 15
 SECRET_KEY = "2f17fc26a3e6b97883e310a2d43ad730d6545a605d1269be370ec52a5e100b9c"
 ALGORITHM = "HS256"
 
-from passlib.context import CryptContext
-from jose import JWTError, jwt
+from jose import jwt
 
 
 def create_access_token(data: dict, expires_delta: timedelta = None):

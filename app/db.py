@@ -1,13 +1,8 @@
-import os
-
 from sqlalchemy import create_engine
-
 from sqlalchemy.orm import sessionmaker
+from config import Config
 
-
-# SQLALCHEMY_DATABASE_URL = os.environ["SQLALCHEMY_DATABASE_URL"]
-SQLALCHEMY_DATABASE_URL = "sqlite:///./sqlite.db"
-# SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserver/db"
+SQLALCHEMY_DATABASE_URL = Config.SQLALCHEMY_DATABASE_URL
 
 # set check_same_thread to false specifically for sqlite3 file database
 # This is to allow multiple threads to access same connection in FastAPI

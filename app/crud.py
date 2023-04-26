@@ -1,10 +1,10 @@
 from sqlalchemy.orm import Session
-
+from config import Config
 from .models import User, Todo
 from .security import get_password_hash
 from . import schemas
 
-DEFAULT_PAGINATION_LIMIT = 5
+PAGINATION_LIMIT = Config.PAGINATION_LIMIT
 
 
 def get_user(db: Session, user_id: int):
@@ -15,7 +15,7 @@ def get_user_by_email(db: Session, email: str):
     return db.query(User).filter(User.email == email).first()
 
 
-def get_users(db: Session, offset: int = 0, limit: int = DEFAULT_PAGINATION_LIMIT):
+def get_users(db: Session, offset: int = 0, limit: int = PAGINATION_LIMIT):
     return db.query(User).offset(offset).limit(limit).all()
 
 
@@ -66,7 +66,7 @@ def get_todo(db: Session, id: int):
     return db.query(Todo).get(id)
 
 
-def get_todos(db: Session, offset: int = 0, limit: int = DEFAULT_PAGINATION_LIMIT):
+def get_todos(db: Session, offset: int = 0, limit: int = PAGINATION_LIMIT):
     return db.query(Todo).offset(offset).limit(limit).all()
 
 
