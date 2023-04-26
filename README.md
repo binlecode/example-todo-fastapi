@@ -79,7 +79,7 @@ that the application is running behind HTTPS.
 CMD ["uvicorn", "app.main:app", "--proxy-headers", "--host", "0.0.0.0", "--port", "80"]
 ```
 
-See [unicorn-start-reload](./uvicorn-start-reload.sh) shell script for details.
+See [unicorn-start-reload](./start-uvicorn.sh) shell script for details.
 
 This should be fine for simple use cases where the load is light and container
 resource allocation is moderate (low resource values of virtual cpu, aka

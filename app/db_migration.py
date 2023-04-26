@@ -10,14 +10,16 @@ logging.basicConfig(level=Config.LOG_LEVEL)
 logger = logging.getLogger(__name__)
 
 
-def init_tables():
+def reset_tables():
     logger.info(">> sqlalchemy dropping existing tables")
     Base.metadata.drop_all(engine)
     logger.info(">> sqlalchemy creating tables")
     Base.metadata.create_all(engine)
+    logger.info(">> sqlalchemy load initial data")
+    init_data()
 
 
-def migrate_data():
+def init_data():
     # load users
     db = SessionLocal()
 

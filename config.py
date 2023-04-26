@@ -4,16 +4,19 @@ import logging
 
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-load_dotenv(os.path.join(basedir, ".env"))
+load_dotenv(os.path.join(basedir, ".env.sample"))
 
 
-class Config:
+class Config(object):
     # LOG_LEVEL = logging.INFO
     LOG_LEVEL = logging.DEBUG
 
-    # SQLALCHEMY_DATABASE_URL = os.environ["SQLALCHEMY_DATABASE_URL"]
-    SQLALCHEMY_DATABASE_URL = "sqlite:///./sqlite.db"
-    # SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserver/db"
+    # Config.SQLALCHEMY_DATABASE_URI = "sqlite:///./sqlite.db"
+    # Config.SQLALCHEMY_DATABASE_URI = "postgresql://user:password@postgresserver/db"
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        "SQLALCHEMY_DATABASE_URI", ""
+    ) or "sqlite:///" + os.path.join(basedir, "sqlite.db")
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     OAUTH2_TOKEN_URL = "/api/auth/token"
 

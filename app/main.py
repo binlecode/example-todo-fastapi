@@ -3,7 +3,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import auth, users, todos
-from .db_migration import init_tables, migrate_data
+from .db_migration import reset_tables
 from . import schemas
 from config import Config
 
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Todo App with FastAPI OpenAPI doc",
-    version="0.0.1",
+    version="0.1",
     dependencies=[],
 )
 
@@ -47,12 +47,11 @@ app.include_router(users.router)
 app.include_router(todos.router)
 
 
-# register startup event handler
+# register database initialization functions in startup event handler
+# this is only for local development
+# this is NOT for production environment where multiple containers are to
+# be deployed
 @app.on_event("startup")
 def on_startup_event():
-    # perform database initialization and data load
     if os.environ.get("RESET_DB"):
-        logger.info(">> initializing tables")
-        init_tables()
-        logger.info(">> loading initial data")
-        migrate_data()
+        reset_tables()
