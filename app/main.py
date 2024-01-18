@@ -1,20 +1,36 @@
-import os
 import logging
+import os
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import auth, users, todos
-from .db_migration import reset_tables
-from . import schemas
+
 from config import Config
 
-logging.basicConfig(level=Config.LOG_LEVEL)
-logger = logging.getLogger(__name__)
+from . import get_logger
+from . import schemas
+from .db_migration import init_data, reset_tables, update_tables
+from .routers import auth, todos, users
+
+logger = get_logger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if os.environ.get("RESET_DB"):
+        reset_tables()
+    elif os.environ.get("UPDATE_DB"):
+        update_tables()
+    yield
+    # cleanup work after the app has finished
+    logger.info("Application has finished.")
 
 
 app = FastAPI(
     title="Todo App with FastAPI OpenAPI doc",
-    version="0.1",
+    version="0.2",
     dependencies=[],
+    lifespan=lifespan,
 )
 
 
@@ -51,7 +67,7 @@ app.include_router(todos.router)
 # this is only for local development
 # this is NOT for production environment where multiple containers are to
 # be deployed
-@app.on_event("startup")
-def on_startup_event():
-    if os.environ.get("RESET_DB"):
-        reset_tables()
+# @app.on_event("startup")
+# def on_startup_event():
+#     if os.environ.get("RESET_DB"):
+#         reset_tables()

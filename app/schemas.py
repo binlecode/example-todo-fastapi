@@ -3,11 +3,11 @@
 # these models (better called 'schemas`) are data shape specs.
 
 from datetime import datetime
-from pydantic import BaseModel
-from pydantic import EmailStr
-from fastapi.security.oauth2 import OAuth2PasswordBearer
-from config import Config
 
+from fastapi.security.oauth2 import OAuth2PasswordBearer
+from pydantic import BaseModel, EmailStr
+
+from config import Config
 
 OAUTH2_TOKEN_URL = Config.OAUTH2_TOKEN_URL
 
@@ -42,7 +42,7 @@ class UserRead(UserBase):
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 ## Todo schemas
@@ -58,13 +58,13 @@ class TodoUpdate(TodoCreate):
 
 
 class TodoRead(TodoUpdate):
-    owner_id: str
+    owner_id: int
     # owner: UserRead
     created_at: datetime
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 # nested view model includes child orm objects

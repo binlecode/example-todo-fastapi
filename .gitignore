@@ -27,6 +27,9 @@ docs_build
 venv
 docs.zip
 archive.zip
+*.lock
+.env
+*.env
 
 # vim temporary files
 *~

@@ -1,6 +1,7 @@
 #! /usr/bin/env sh
 set -e
 
+# set default value of environment variables
 HOST=${HOST:-0.0.0.0}
 PORT=${PORT:-80}
 LOG_LEVEL=${LOG_LEVEL:-info}

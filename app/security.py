@@ -1,10 +1,12 @@
 import logging
 from datetime import datetime, timedelta
+
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
-from .models import User
 from config import Config
+
+from .models import User
 
 logging.basicConfig(level=Config.LOG_LEVEL)
 logger = logging.getLogger(__name__)

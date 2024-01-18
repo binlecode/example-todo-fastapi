@@ -1,22 +1,62 @@
-import logging
-from .db import engine
-from .models import Base
-from .db import SessionLocal
-from .models import User, Todo
-from config import Config
+from functools import wraps
+from filelock import FileLock, Timeout
+from . import get_logger
+from .db import SessionLocal, engine
+from .models import Base, Todo, User
+
+# logging.basicConfig(level=Config.LOG_LEVEL)
+# logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
-logging.basicConfig(level=Config.LOG_LEVEL)
-logger = logging.getLogger(__name__)
+# decorator to lock a function with a file lock:
+# - ensure only one process can run it at a time
+# - quit locking trial once timeout is reached
+# This is ONLY useful for multiple worker processes deployment with one
+# virtual machine, if there are distributed multiple virtual machines,
+# the file lock will not work as it only prevents multiple processes by
+# a file in the same virtual machine.
+def with_lock(lockfile, timeout=0):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            lock = FileLock(lockfile)
+            try:
+                lock.acquire(timeout=timeout)
+                logger.debug(f"locked {lockfile}")
+                return func(*args, **kwargs)
+            except Timeout:
+                logger.error(f"failed to acquire lock {lockfile}")
+                return
+            finally:
+                lock.release()
+                logger.debug(f"released {lockfile}")
+
+        return wrapper
+
+    return decorator
 
 
+# todo: need a distributed lock solution for multiple virtual machines deployment
+#   such as redis lock, database lock, etc.
+#   Note that for database lock the underlying table should NOT be part of
+#   salalchemy models, otherwise it will cause deadlock in shema migrations.
+
+
+@with_lock("reset_table.lock")
 def reset_tables():
     logger.info(">> sqlalchemy dropping existing tables")
     Base.metadata.drop_all(engine)
-    logger.info(">> sqlalchemy creating tables")
+    logger.info(">> sqlalchemy creating or updating tables")
     Base.metadata.create_all(engine)
-    logger.info(">> sqlalchemy load initial data")
+    logger.info(">> sqlalchemy loading initial data")
     init_data()
+
+
+@with_lock("update_table.lock")
+def update_tables():
+    logger.info(">> sqlalchemy creating or updating tables")
+    Base.metadata.create_all(engine)
 
 
 def init_data():

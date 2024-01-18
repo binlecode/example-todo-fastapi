@@ -2,82 +2,51 @@
 
 This is a simple todo crud REST api app with sqlalchemy ORM.
 
-Sqlalchemy db session is injected into route functions via Fastapi Depends()
-function.
-
-Fastapi has built-in OAuth 2 password flow user authentication support, it is
-used in this app for token based access control.
-
-## environment setup
-
-Install by requirements.txt:
-
-```sh
-pip install -r requirements.txt
-```
-
-Or, install manually for newer lib versions for development / upgrade:
-
-```sh
-# use sqlalchemy for data models
-pip install sqlalchemy
-pip install fastapi
-pip install python-dotenv
-# install multipart support for form and file post
-pip install python-multipart
-pip install pydantic "pydantic[email]"
-pip install uvicorn
-# install gunicorn + unicorn standard extra package for deployment
-pip install "uvicorn[standard]" gunicorn
-# install passlib for password hashing
-# choose bcrypt as password hashing algorithm
-# ref: https://en.wikipedia.org/wiki/Bcrypt
-pip install "passlib[bcrypt]"
-# install cryptography lib python-jose for jwt
-# JOSE stands for JavaScript Object Signing and Encryption
-pip install "python-jose[cryptography]"
-```
+- Sqlalchemy db session is injected into route functions via Fastapi Depends()
+  function
+- Fastapi has built-in OAuth 2 password flow user authentication support, it is
+  used in this app for token based access control
+- Use pydantic model to validate request body and response data
+- Use Gunicorn as process manager to run Uvicorn workers in a container
 
 ## run local app
 
 ```sh
+pyenv shell 3.10
+python -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# run app with uvicorn
 uvicorn app.main:app --reload
 # with a more verbose format
 uvicorn --reload --host $HOST --port $PORT --log-level $LOG_LEVEL "$APP_MODULE"
 
-# reset local sqlite db during app start up
-RESET_DB=true uvicorn app.main:app --reload
+# reset db during app start up
+RESET_DB=1 uvicorn app.main:app --reload
+# update or create db during app start up, this is for incremental db migration
+# and it does not load initial data
+UPDATE_DB=1 uvicorn app.main:app --reload
 ```
 
-## Openapi doc
+## SwaggerUI with Openapi doc
 
 Openapi doc is auto-generated at `http://<host>:<port>/docs`.
-
 
 ## pydantic
 
 To convert Sqlalchemy orm model data into pydantic validation schema,
-the schema (pydantic model) has to load custom config with `orm_mode = True`.
+the schema (pydantic model) has to load custom config with
+`from_attributes = True`.
 
-## deployment and container scripts
+## build and run container
 
-When develop locally, uvicorn runs in a single process.
-
-For a container image, the start CMD can run uvicorn in single process:
-
-```sh
-exec uvicorn --reload --host $HOST --port $PORT --log-level $LOG_LEVEL "$APP_MODULE"
-```
-
-Note, if container is behind a TLS Termination Proxy (load balancer) like Nginx
+If container is behind a TLS Termination Proxy (load balancer) like Nginx
 or Traefik, add the option `--proxy-headers` to the CMD.
 
 This option tells Uvicorn to trust the headers sent by that proxy telling it
 that the application is running behind HTTPS.
-
-```sh
-CMD ["uvicorn", "app.main:app", "--proxy-headers", "--host", "0.0.0.0", "--port", "80"]
-```
 
 See [unicorn-start-reload](./start-uvicorn.sh) shell script for details.
 
@@ -107,32 +76,18 @@ the start CMD can be:
 
 ```sh
 # set workers number to a static number, which should be equal or less than cpu core number
-gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:80
-
-# or, use gunicorn_conf.py that holds adaptive settings for linux OS container env
-gunicorn app.main:app -c gunicorn_conf.py --worker-class uvicorn.workers.UvicornWorker
+LOG_LEVEL=DEBUG UPDATE_DB=1 gunicorn app.main:app --workers 2 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:80 --log-level debug --reload
 ```
+
+A gunicorn_conf.py file is used to hold adaptive settings for linux OS base image.
 
 See [start.sh](./start.sh) script for details.
 
-Note that Fastapi's on_event("startup") handler will run for each worker
-during app startup.
-
-## build image and run container
-
-build docker image with [Dockerfile](./Dockerfile)
+Build docker image with [Dockerfile](./Dockerfile), and run locally:
 
 ```sh
-docker build -t example-todo-fastapi .
-```
-
-In this Dockerfile, a local sqlite.db file is copied over to bypass external
-database dependency.
-
-run container locally:
-
-```sh
-docker run -d --name example-todo-fastapi -p 80:80 example-todo-fastapi
+docker build -t example-todo-fastapi:test . && \
+docker run --rm --name example-todo-fastapi -p 80:80 example-todo-fastapi:test
 ```
 
 test container endpoints:
@@ -144,6 +99,50 @@ curl -X 'GET' 'http://127.0.0.1/openapi.json' -H 'accept: application/json' | jq
 ```
 
 or use browser to hit url: http://127.0.0.1/docs
+
+
+## docker-compose
+
+```sh
+docker compose up --build
+```
+
+
+
+## application setup
+
+Application dependencies:
+
+```sh
+pyenv shell 3.10
+python -m venv venv
+source venv/bin/activate
+pip install --upgrade pip isort black
+# use sqlalchemy for data models
+pip install sqlalchemy
+pip install fastapi
+pip install python-dotenv
+# install multipart support for form and file post
+pip install python-multipart
+pip install pydantic "pydantic[email]"
+pip install uvicorn
+# install gunicorn + unicorn standard extra package for deployment
+pip install "uvicorn[standard]" gunicorn
+# install passlib for password hashing
+# choose bcrypt as password hashing algorithm
+# ref: https://en.wikipedia.org/wiki/Bcrypt
+pip install "passlib[bcrypt]"
+# install cryptography lib python-jose for jwt
+# JOSE stands for JavaScript Object Signing and Encryption
+pip install "python-jose[cryptography]"
+# introduce filelock to ensure single-process db migration operations
+pip install filelock
+# for postgresql db
+pip install psycopg2-binary
+
+# save dependencies to requirements.txt
+pip freeze > requirements.txt
+```
 
 ## References
 
