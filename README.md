@@ -27,7 +27,7 @@ uvicorn --reload --host $HOST --port $PORT --log-level $LOG_LEVEL "$APP_MODULE"
 RESET_DB=1 uvicorn app.main:app --reload
 # update or create db during app start up, this is for incremental db migration
 # and it does not load initial data
-UPDATE_DB=1 uvicorn app.main:app --reload
+UPDATE_DB=1 uvicorn app.main:app  --reload
 ```
 
 ## SwaggerUI with Openapi doc
@@ -100,14 +100,26 @@ curl -X 'GET' 'http://127.0.0.1/openapi.json' -H 'accept: application/json' | jq
 
 or use browser to hit url: http://127.0.0.1/docs
 
-
 ## docker-compose
 
 ```sh
 docker compose up --build
+
+# shutdown and remove containers, but keep images and volumes
+docker compose down
+
+# shut down and remove everything including images and volumes
+docker compose down --rmi all --volumes
 ```
 
+## other development notes
 
+To format code, use black and isort.
+Isort usually will break black formatting, so run isort first, then run black.
+
+```sh
+isort . && black .
+```
 
 ## application setup
 
