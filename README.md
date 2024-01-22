@@ -76,7 +76,8 @@ the start CMD can be:
 
 ```sh
 # set workers number to a static number, which should be equal or less than cpu core number
-LOG_LEVEL=DEBUG UPDATE_DB=1 gunicorn app.main:app --workers 2 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:80 --log-level debug --reload
+LOG_LEVEL=DEBUG UPDATE_DB=1 gunicorn app.main:app --workers 2 --worker-class \
+  uvicorn.workers.UvicornWorker --bind 0.0.0.0:80 --log-level debug --reload
 ```
 
 A gunicorn_conf.py file is used to hold adaptive settings for linux OS base image.
@@ -87,7 +88,7 @@ Build docker image with [Dockerfile](./Dockerfile), and run locally:
 
 ```sh
 docker build -t example-todo-fastapi:test . && \
-docker run --rm --name example-todo-fastapi -p 80:80 example-todo-fastapi:test
+docker run --rm --name example-todo-fastapi -p 80:8000 example-todo-fastapi:test
 ```
 
 test container endpoints:

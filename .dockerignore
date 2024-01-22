@@ -146,3 +146,7 @@ Dockerfile
 
 # Lock files
 *.lock
+
+# sqlite database files
+*.sqlite3
+*.db
