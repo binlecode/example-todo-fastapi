@@ -10,11 +10,7 @@ COPY ./requirements.txt /code/requirements.txt
 # disable cache saving to reduce image size
 RUN pip install --no-cache-dir -r /code/requirements.txt
 
-# 
-# COPY ./app /code/app
-# COPY ./config.py /code/config.py
-# COPY ./gunicorn_conf.py /code/gunicorn_conf.py
-# COPY ./start.sh /code/start.sh
+# copy app source code
 COPY ./app /code/app
 COPY ./config.py /code/
 
