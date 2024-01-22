@@ -51,44 +51,38 @@ that the application is running behind HTTPS.
 See [unicorn-start-reload](./start-uvicorn.sh) shell script for details.
 
 This should be fine for simple use cases where the load is light and container
-resource allocation is moderate (low resource values of virtual cpu, aka
-equal or less than 1 vcpu).
+resource is limited as as dev docker engine. 
 
-For performance intensive use cases, such as highly concurrent requests and
-processing intensive services, we should consider multi-process service
+For production deployment, we should consider multi-process service
 in a container.
+It is best practice to use Gunicorn to manage Uvicorn worker-class processes
+in production deployment:
 
-Uvicorn could run with `--workers` option to enable multiple workers,
-but it does not provide any process monitoring or management, thus it is not
-suitable for production.
-
-It is common practice to use Gunicorn to manage Uvicorn worker-class processes:
-
-- Gunicorn can be used as a process manager, it can recycle dead processes
+- Gunicorn serves as a process manager, it can recycle dead processes
   and restart new processes
-- Uvicorn can work as a Gunicorn compatible worker class, so that a uvicorn
-  worker process can be managed by Gunicorn
+- Uvicorn works as a Gunicorn compatible worker class, so that uvicorn
+  worker processes are managed by Gunicorn
 
 Ref: https://fastapi.tiangolo.com/deployment/server-workers/#gunicorn-with-uvicorn-workers
 
-In deployment environemnt where multiple cpu cores are available for a container,
-the start CMD can be:
+With multiple cpu cores available, the start CMD can be:
 
 ```sh
-# set workers number to a static number, which should be equal or less than cpu core number
-LOG_LEVEL=DEBUG UPDATE_DB=1 gunicorn app.main:app --workers 2 --worker-class \
-  uvicorn.workers.UvicornWorker --bind 0.0.0.0:80 --log-level debug --reload
+# use UPDATE_DB=1 to update db schema instead of reset and load initial data
+LOG_LEVEL=DEBUG RESET_DB=1 gunicorn app.main:app --workers 2 --worker-class \
+  uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --log-level debug --reload
 ```
 
-A gunicorn_conf.py file is used to hold adaptive settings for linux OS base image.
-
-See [start.sh](./start.sh) script for details.
+A [start.sh](./start.sh) script is created to run gunicorn in a container.
+In that script, a [gunicorn_conf.py](./gunicorn_conf.py) file is used to 
+set configurations adaptive to the container resource.
 
 Build docker image with [Dockerfile](./Dockerfile), and run locally:
 
 ```sh
 docker build -t example-todo-fastapi:test . && \
-docker run --rm --name example-todo-fastapi -p 80:8000 example-todo-fastapi:test
+docker run --rm --name example-todo-fastapi -p 8000:8000 example-todo-fastapi:test
+docker run --rm --name example-todo-fastapi -p 8000:8000 -e RESET_DB=1 example-todo-fastapi:test
 ```
 
 test container endpoints:

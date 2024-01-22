@@ -21,14 +21,15 @@ async def lifespan(app: FastAPI):
         reset_tables()
     elif os.environ.get("UPDATE_DB"):
         update_tables()
+    # yield to boot up the app
     yield
     # cleanup work after the app has finished
     logger.info("Application has finished.")
 
 
 app = FastAPI(
-    title="Todo App with FastAPI OpenAPI doc",
-    version="0.2",
+    title="Todo App with FastAPI",
+    version="0.3",
     dependencies=[],
     lifespan=lifespan,
 )
