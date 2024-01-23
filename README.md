@@ -21,7 +21,8 @@ pip install --upgrade pip
 pip install -r requirements.txt
 
 # run app with uvicorn
-uvicorn app.main:app --reload
+# by default, only *.py files are watched for changes, include *.html files too
+uvicorn app.main:app --reload --reload-include "*.html"
 # with a more verbose format
 uvicorn --reload --host $HOST --port $PORT --log-level $LOG_LEVEL "$APP_MODULE"
 
