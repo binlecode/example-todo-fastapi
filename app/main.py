@@ -16,6 +16,7 @@ from config import Config
 from . import get_logger
 from . import schemas
 from . import crud
+from .models import User
 from .security import authenticate_user
 from .db import get_db
 from .db_migration import reset_tables, update_tables
@@ -57,19 +58,36 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+# interceptor for current_user from session-based authentication
+# can be depency-injected into template response functions
+def get_current_user_by_session_id(request: Request, db: Session = Depends(get_db)):
+    session_id = request.cookies.get("session_id")
+    if session_id is None:
+        return None
+    # Get the user from the session
+    user_id = sessions.get(session_id)
+    if user_id is None:
+        return None
+    user = crud.get_user(db, user_id)
+    return user
+
+
 # initialize html templates
 BASE_PATH = Path(__file__).resolve().parent
 TEMPLATES = Jinja2Templates(directory=str(BASE_PATH / "templates"))
 
 
 @app.get("/home")
-def home(request: Request, db: Session = Depends(get_db)):
+def home(
+    request: Request, current_user: User = Depends(get_current_user_by_session_id)
+):
     # for TemplateResponse, the context hash must include request object
     return TEMPLATES.TemplateResponse(
         "todos.html",
         {
             "request": request,
-            "current_user": get_authenticated_user_from_session_id(request, db),
+            "current_user": current_user,
         },
     )
 
@@ -78,6 +96,7 @@ def home(request: Request, db: Session = Depends(get_db)):
 def logout(request: Request):
     # clear cookie for session_id
     redirect_url = request.url_for("login")
+    # set status code is 302 to ensure redirect results in a GET request
     response = RedirectResponse(redirect_url, status_code=status.HTTP_302_FOUND)
     response.delete_cookie(key="session_id")
     return response
@@ -85,7 +104,6 @@ def logout(request: Request):
 
 @app.get("/login")
 def login(request: Request):
-    # for TemplateResponse, the context hash must include request object
     return TEMPLATES.TemplateResponse("login.html", {"request": request})
 
 
@@ -138,16 +156,3 @@ def create_session(user_id: int):
     session_id = str(uuid.uuid4())
     sessions[session_id] = user_id
     return session_id
-
-
-# Custom middleware for session-based authentication
-def get_authenticated_user_from_session_id(request: Request, db: Session):
-    session_id = request.cookies.get("session_id")
-    if session_id is None:
-        return None
-    # Get the user from the session
-    user_id = sessions.get(session_id)
-    if user_id is None:
-        return None
-    user = crud.get_user(db, user_id)
-    return user
