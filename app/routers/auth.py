@@ -6,6 +6,7 @@ from jose import JWTError
 from sqlalchemy.orm import Session
 
 from .. import schemas
+from .. import crud
 from ..db import get_db
 from ..models import User
 from ..security import (
@@ -59,7 +60,7 @@ def get_current_user_by_token(
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-    user = db.query(User).filter(User.email == email).first()
+    user = crud.get_user_by_email(db, email=email)
     if user is None:
         raise credentials_exception
     return user
@@ -68,6 +69,5 @@ def get_current_user_by_token(
 @router.get("/me", response_model=schemas.UserRead)
 def read_logged_in_user(
     current_user: User = Depends(get_current_user_by_token),
-    db: Session = Depends(get_db),
 ):
     return current_user
