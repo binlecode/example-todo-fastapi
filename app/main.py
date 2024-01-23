@@ -1,15 +1,17 @@
 import logging
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.templating import Jinja2Templates
 
 from config import Config
 
 from . import get_logger
 from . import schemas
-from .db_migration import init_data, reset_tables, update_tables
+from .db_migration import reset_tables, update_tables
 from .routers import auth, todos, users
 
 logger = get_logger(__name__)
@@ -47,6 +49,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# initialize html templates
+BASE_PATH = Path(__file__).resolve().parent
+TEMPLATES = Jinja2Templates(directory=str(BASE_PATH / "templates"))
+
+
+@app.get("/home", status_code=200)
+def home(request: Request):
+    # for TemplateResponse, the context hash must include request object
+    return TEMPLATES.TemplateResponse("index.html", {"request": request})
 
 
 @app.get("/")

@@ -1,7 +1,9 @@
 # Example Todo App with Fastapi and Sqlalchemy
 
-This is a simple todo crud REST api app with sqlalchemy ORM.
-
+This is a simple todo crud app
+- REST API endpoints for todo crud operations
+- jinja2 template + tailwindcss for frontend html
+  - jquery ajax call to REST API endpoints for data
 - Sqlalchemy db session is injected into route functions via Fastapi Depends()
   function
 - Fastapi has built-in OAuth 2 password flow user authentication support, it is
@@ -146,6 +148,8 @@ pip install "python-jose[cryptography]"
 pip install filelock
 # for postgresql db
 pip install psycopg2-binary
+# for view templates
+pip install jinja2
 
 # save dependencies to requirements.txt
 pip freeze > requirements.txt

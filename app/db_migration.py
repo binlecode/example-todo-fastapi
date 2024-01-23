@@ -89,9 +89,56 @@ def init_data():
             Todo(
                 text="Water flower",
                 owner=u1,
+                completed=True,
             ),
             Todo(
                 text="Play outdoor tennis",
+                owner=u2,
+            ),
+            Todo(
+                text="Buy groceries",
+                owner=u2,
+            ),
+            Todo(
+                text="Learn a new programming language",
+                owner=u1,
+            ),
+            Todo(
+                text="Read a book about artificial intelligence",
+                owner=u1,
+                completed=True,
+            ),
+            Todo(
+                text="Start a personal coding project",
+                owner=u2,
+            ),
+            Todo(
+                text="Take a course on data science",
+                owner=u2,
+                completed=True,
+            ),
+            Todo(
+                text="Write a blog post about a recent tech discovery",
+                owner=u1,
+            ),
+            Todo(
+                text="Contribute to an open source project",
+                owner=u2,
+            ),
+            Todo(
+                text="Explore a new technology or framework",
+                owner=u1,
+            ),
+            Todo(
+                text="Create a portfolio website",
+                owner=u2,
+            ),
+            Todo(
+                text="Attend a tech meetup or conference",
+                owner=u1,
+            ),
+            Todo(
+                text="Build a mobile app",
                 owner=u2,
             ),
         ]
