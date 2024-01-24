@@ -1,3 +1,4 @@
+import typing
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -80,8 +81,8 @@ async def get_current_user_by_session_id(
     request: Request, db: Session = Depends(get_db)
 ):
     # get user_id from starlette session
-    # by default, session is not autoloaded for performance reasons
-    # session should be loaded selectively for necessary routes
+    # session is not autoloaded by default for performance reasons
+    # load session to request selectively for necessary routes
     await load_session(request)
     user_id = request.session.get("user_id")
     if user_id is None:
@@ -112,6 +113,8 @@ async def home(
         {
             "request": request,
             "current_user": current_user,
+            # "flashed_messages": get_flashed_messages(request),
+            "flashed_messages": await get_flashed_messages(request),
         },
     )
 
@@ -122,6 +125,8 @@ async def logout(request: Request):
     await load_session(request)
     request.session.pop("user_id", None)
 
+    await flash(request, "You have been logged out.", category="warning")
+
     redirect_url = request.url_for("login")
     # set status code is 302 to ensure redirect results in a GET request
     response = RedirectResponse(redirect_url, status_code=status.HTTP_302_FOUND)
@@ -129,8 +134,15 @@ async def logout(request: Request):
 
 
 @app.get("/login", include_in_schema=False)
-def login(request: Request):
-    return TEMPLATES.TemplateResponse("login.html", {"request": request})
+async def login(request: Request):
+    await load_session(request)
+    return TEMPLATES.TemplateResponse(
+        "login.html",
+        {
+            "request": request,
+            "flashed_messages": await get_flashed_messages(request),
+        },
+    )
 
 
 @app.post("/login", include_in_schema=False)
@@ -149,6 +161,8 @@ async def login(
     # update user id in starlette session
     await load_session(request)
     request.session["user_id"] = user.id
+
+    await flash(request, "You have been logged in.", category="success")
 
     redirect_url = request.url_for("home")
     logger.debug(f"redirect_url: {redirect_url}")
@@ -169,3 +183,19 @@ def read_health():
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(todos.router)
+
+
+# flash messages helper to push messages to session for one-time display
+async def flash(
+    request: Request, message: typing.Any, category: str = "success"
+) -> None:
+    await load_session(request)
+    if "_messages" not in request.session:
+        request.session["_messages"] = []
+    request.session["_messages"].append({"message": message, "category": category})
+
+
+# pop flashed messages from session for one-time display
+async def get_flashed_messages(request: Request):
+    await load_session(request)
+    return request.session.pop("_messages") if "_messages" in request.session else []

@@ -76,6 +76,17 @@
       <p class="mt-4 text-md">This is a placeholder description of the application.</p>
     </div>
 
+    <!-- show flash messages if exist -->
+    {% if flashed_messages %}
+      {% for fm in flashed_messages %}
+        <div class="mt-4 alert alert-{{ fm['category'] }}">
+          <div class="{{ 'bg-green-500 text-white' if fm['category'] == 'success' else 'bg-yellow-200 text-black' if fm['category'] == 'warning' else 'bg-red-500 text-white' }} p-2 rounded-md">
+            <p>{{ fm["message"] }}</p>
+          </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+
     {% block content %}{% endblock %}
   </main>
 
@@ -95,7 +106,6 @@
         $(target).toggleClass('hidden');
       });
     });
-
 
     var currentPage = 1;
     var pageLimit = 4;
@@ -152,5 +162,4 @@
     });
   </script>
 </body>
-
 </html>
