@@ -10,7 +10,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
-from starsessions import CookieStore, SessionAutoloadMiddleware, SessionMiddleware
+from starsessions import CookieStore, SessionMiddleware
 from starsessions import load_session
 
 from config import Config
