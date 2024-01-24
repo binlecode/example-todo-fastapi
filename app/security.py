@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
+from jose import jwt
+
 
 from config import Config
 
@@ -39,13 +41,11 @@ def authenticate_user(db: Session, email: str, password: str):
 # to use RSA asymmetric encryption, a pair of private, public keys are used
 # usually public key should be distributed by a jwks endpoint by OAuth 2 specs
 
-ACCESS_TOKEN_EXPIRE_MINUTES = 15
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = Config.ACCESS_TOKEN_EXPIRE_MINUTES
 # to generate a secret key for 32char length use:
 # openssl rand -hex 32
-SECRET_KEY = "2f17fc26a3e6b97883e310a2d43ad730d6545a605d1269be370ec52a5e100b9c"
-ALGORITHM = "HS256"
-
-from jose import jwt
+SECRET_KEY = Config.SECRET_KEY
 
 
 def create_access_token(data: dict, expires_delta: timedelta = None):

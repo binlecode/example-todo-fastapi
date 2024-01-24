@@ -23,6 +23,15 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     logger.info(f"SQLALCHEMY_TRACK_MODIFICATIONS: {SQLALCHEMY_TRACK_MODIFICATIONS}")
 
+    # secret key for signing cookies (web) and tokens (api)
+    SECRET_KEY = os.getenv("SECRET_KEY") or "TOP SECRET"
+    logger.info(f"SECRET_KEY: {SECRET_KEY[:8]}...")
+
     OAUTH2_TOKEN_URL = "/api/auth/token"
+    logger.info(f"OAUTH2_TOKEN_URL: {OAUTH2_TOKEN_URL}")
+
+    ACCESS_TOKEN_EXPIRE_MINUTES = 15
+    logger.info(f"ACCESS_TOKEN_EXPIRE_MINUTES: {ACCESS_TOKEN_EXPIRE_MINUTES}")
 
     PAGINATION_LIMIT = 5
+    logger.info(f"PAGINATION_LIMIT: {PAGINATION_LIMIT}")

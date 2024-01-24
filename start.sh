@@ -1,7 +1,7 @@
 #! /usr/bin/env sh
 set -e
 
-# if RESET_DB is not set, set UPDATE_DB to 1
+# if RESET_DB is not set, check UPDATE_DB, if not set, default to UPDATE_DB=1
 if [ -z "$RESET_DB" ]; then
     export UPDATE_DB=${UPDATE_DB:-1}
 fi

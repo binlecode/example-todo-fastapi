@@ -2,14 +2,18 @@
 
 This is a simple todo crud app
 - REST API endpoints for todo crud operations
+- Use pydantic model to validate request body and response data
+- Fastapi built-in OAuth 2 password flow user authentication support, it is
+  used in this app for token based access control
 - jinja2 template + tailwindcss for frontend html
   - jquery ajax call to REST API endpoints for data
+- web session based user authentication and login flow
+- web user session management with starsession middleware
+  - Ref: https://github.com/alex-oleshkevich/starsessions
 - Sqlalchemy db session is injected into route functions via Fastapi Depends()
   function
-- Fastapi has built-in OAuth 2 password flow user authentication support, it is
-  used in this app for token based access control
-- Use pydantic model to validate request body and response data
 - Use Gunicorn as process manager to run Uvicorn workers in a container
+- docker container and docker compose with postgresql db
 
 ## run local app
 
