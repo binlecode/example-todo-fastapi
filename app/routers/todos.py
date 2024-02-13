@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
 from .. import crud, schemas
@@ -12,7 +12,11 @@ router = APIRouter(prefix="/api/todos", dependencies=[])
 # @router.get("/", response_model=list[schemas.TodoReadNested])
 @router.get("/", response_model=list[schemas.TodoRead])
 def read_todos(
-    user_id: int = None, offset: int = 0, limit: int = 10, db: Session = Depends(get_db)
+    # user_id: int = Query(None, title="User ID", description="The ID of the user associated to the todos to view"),
+    user_id: int = None,
+    offset: int = 0,
+    limit: int = 10,
+    db: Session = Depends(get_db),
 ):
     if user_id:
         todos = crud.get_user_todos(db, user_id)

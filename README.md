@@ -5,7 +5,7 @@ This is a simple todo crud app
 - Use pydantic model to validate request body and response data
 - Fastapi built-in OAuth 2 password flow user authentication support, it is
   used in this app for token based access control
-- jinja2 template + tailwindcss for frontend html
+- jinja2 template + flowbite with tailwindcss for frontend html
   - jquery ajax call to REST API endpoints for data
 - web session based user authentication and login flow
 - web user session management with starsession middleware
@@ -39,7 +39,11 @@ UPDATE_DB=1 uvicorn app.main:app  --reload
 
 ## SwaggerUI with Openapi doc
 
-Openapi doc is auto-generated at `http://<host>:<port>/docs`.
+Openapi doc for REST endpoints is auto-generated at `http://<host>:<port>/docs`.
+
+## Web pages url
+
+Web pages are built with Jinja2 templates, the home url is `http://<host>:<port>/home`.
 
 ## pydantic
 
