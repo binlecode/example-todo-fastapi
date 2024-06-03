@@ -1,19 +1,21 @@
 # Example Todo App with Fastapi and Sqlalchemy
 
 This is a simple todo crud app
-- REST API endpoints for todo crud operations
-- Use pydantic model to validate request body and response data
-- Fastapi built-in OAuth 2 password flow user authentication support, it is
-  used in this app for token based access control
-- jinja2 template + flowbite with tailwindcss for frontend html
-  - jquery ajax call to REST API endpoints for data
-- web session based user authentication and login flow
-- web user session management with starsession middleware
-  - Ref: https://github.com/alex-oleshkevich/starsessions
-- Sqlalchemy db session is injected into route functions via Fastapi Depends()
-  function
-- Use Gunicorn as process manager to run Uvicorn workers in a container
-- docker container and docker compose with postgresql db
+
+-   REST API endpoints for todo crud operations
+-   Use pydantic model to validate request body and response data
+-   Use Fastapi built-in OAuth 2 password flow for user authentication
+-   user authentication is applied to both token validation for API call
+    and web session management for web page access
+-   jinja2 template + flowbite with tailwindcss for web html
+-   web pages use jquery ajax calls to access REST API endpoints for data
+-   web pages provide web forms for user login and session based authentication
+-   web user session management with starsession middleware
+    -   Ref: https://github.com/alex-oleshkevich/starsessions
+-   Sqlalchemy db session is injected into route functions via Fastapi Depends()
+    function
+-   Use Gunicorn as process manager to run Uvicorn workers in a container
+-   docker container and docker compose with postgresql db
 
 ## run local app
 
@@ -62,17 +64,17 @@ that the application is running behind HTTPS.
 See [unicorn-start-reload](./start-uvicorn.sh) shell script for details.
 
 This should be fine for simple use cases where the load is light and container
-resource is limited as as dev docker engine. 
+resource is limited as as dev docker engine.
 
 For production deployment, we should consider multi-process service
 in a container.
 It is best practice to use Gunicorn to manage Uvicorn worker-class processes
 in production deployment:
 
-- Gunicorn serves as a process manager, it can recycle dead processes
-  and restart new processes
-- Uvicorn works as a Gunicorn compatible worker class, so that uvicorn
-  worker processes are managed by Gunicorn
+-   Gunicorn serves as a process manager, it can recycle dead processes
+    and restart new processes
+-   Uvicorn works as a Gunicorn compatible worker class, so that uvicorn
+    worker processes are managed by Gunicorn
 
 Ref: https://fastapi.tiangolo.com/deployment/server-workers/#gunicorn-with-uvicorn-workers
 
@@ -85,7 +87,7 @@ LOG_LEVEL=DEBUG RESET_DB=1 gunicorn app.main:app --workers 2 --worker-class \
 ```
 
 A [start.sh](./start.sh) script is created to run gunicorn in a container.
-In that script, a [gunicorn_conf.py](./gunicorn_conf.py) file is used to 
+In that script, a [gunicorn_conf.py](./gunicorn_conf.py) file is used to
 set configurations adaptive to the container resource.
 
 Build docker image with [Dockerfile](./Dockerfile), and run locally:
