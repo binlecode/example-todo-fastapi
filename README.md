@@ -20,9 +20,9 @@ This is a simple todo crud app
 ## run local app
 
 ```sh
-pyenv shell 3.10
-python -m venv venv
-source venv/bin/activate
+pyenv shell 3.11
+python -m venv .venv
+source .venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 
@@ -129,19 +129,25 @@ Isort usually will break black formatting, so run isort first, then run black.
 isort . && black .
 ```
 
-## application setup
+## appendix: application boostrap
 
 Application dependencies:
 
 ```sh
-pyenv shell 3.10
-python -m venv venv
-source venv/bin/activate
-pip install --upgrade pip isort black
+pyenv shell 3.11
+python -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+# install isort form import auto sorting
+pip install isort
+# install black for code formatting
+pip install black
 # use sqlalchemy for data models
 pip install sqlalchemy
 pip install fastapi
 pip install python-dotenv
+# install starlette session middleware
+pip install starsessions
 # install multipart support for form and file post
 pip install python-multipart
 pip install pydantic "pydantic[email]"
