@@ -109,10 +109,14 @@
     var currentPage = 1;
     var pageLimit = 4;
 
+    // Embed the current_user's id into JavaScript
+    var current_user_id = `{{ current_user.id if current_user else '' }}`;
+    console.log('current_user_id', current_user_id);
+
     function loadTodos(page) {
       var offset = (page - 1) * pageLimit;
       $.ajax({
-        url: '/api/todos/?user_id=' + `{{ current_user.id }}`,
+        url: '/api/todos/?user_id=' + current_user_id,
         type: 'GET',
         data: {
           offset: offset,

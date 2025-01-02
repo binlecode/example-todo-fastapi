@@ -19,7 +19,7 @@ def read_todos(
     db: Session = Depends(get_db),
 ):
     if user_id:
-        todos = crud.get_user_todos(db, user_id)
+        todos = crud.get_user_todos(db, user_id, offset=offset, limit=limit)
     else:
         todos = crud.get_todos(db, offset=offset, limit=limit)
     return todos

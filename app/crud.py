@@ -72,5 +72,13 @@ def get_todos(db: Session, offset: int = 0, limit: int = PAGINATION_LIMIT):
     return db.query(Todo).offset(offset).limit(limit).all()
 
 
-def get_user_todos(db: Session, user_id: int):
-    return db.query(Todo).filter(Todo.owner_id == user_id).all()
+def get_user_todos(
+    db: Session, user_id: int, offset: int = 0, limit: int = PAGINATION_LIMIT
+):
+    return (
+        db.query(Todo)
+        .filter(Todo.owner_id == user_id)
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
