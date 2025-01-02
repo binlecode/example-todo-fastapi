@@ -12,6 +12,8 @@ sqlite.db
 .vscode
 __pycache__
 .pytest_cache
+venv/
+.venv/
 htmlcov
 dist
 site
@@ -24,7 +26,6 @@ Pipfile.lock
 env3.*
 env
 docs_build
-venv
 docs.zip
 archive.zip
 *.lock
