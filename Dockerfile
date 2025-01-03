@@ -1,31 +1,19 @@
-#
-FROM python:3.10
+FROM python:3.11.8
 
-# 
-WORKDIR /code
-
-# 
-COPY ./requirements.txt /code/requirements.txt
-
-# disable cache saving to reduce image size
-RUN pip install --no-cache-dir -r /code/requirements.txt
+COPY requirements.txt requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # copy app source code
-COPY ./app /code/app
-COPY ./config.py /code/
-
-# run gunicorn with multi-process, for production deployment
-COPY ./gunicorn_conf.py ./start.sh /code/
-RUN chmod +x /code/start.sh
+COPY app app
+COPY config.py gunicorn_conf.py start.sh ./
+RUN chmod +x start.sh
 
 # run uvicorn with single process (for debug, not for production)
 # COPY ./start-uvicorn.sh /code/start-uvicorn.sh
 # RUN chmod +x /code/start-uvicorn.sh
 
 # start by cmd string
-#CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
-
-# start uvicorn with single process
+# CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
 # CMD ["./start-uvicorn.sh"]
 
 # start multi-process gunicorn, for production deployment
