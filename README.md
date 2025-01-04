@@ -23,13 +23,17 @@ This is a simple todo crud app
 pyenv shell 3.11
 python -m venv .venv
 source .venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
+# install poetry with pip in the virtual environment
+pip install --upgrade pip poetry
+# poetry recognizes and installs dependencies in this virtual environment
+poetry install
+# verify poetry attached virtual environment
+poetry env info | grep Path
 
 # run app with uvicorn
 # by default, only *.py files are watched for changes, include *.html files too
 uvicorn app.main:app --reload --reload-include "*.html"
-# with a more verbose format
+# run with a more verbose format
 uvicorn --reload --host $HOST --port $PORT --log-level $LOG_LEVEL "$APP_MODULE"
 
 # reset db during app start up
@@ -93,20 +97,24 @@ set configurations adaptive to the container resource.
 Build docker image with [Dockerfile](./Dockerfile), and run locally:
 
 ```sh
-docker build -t example-todo-fastapi:test . && \
-docker run --rm --name example-todo-fastapi -p 8000:8000 example-todo-fastapi:test
-docker run --rm --name example-todo-fastapi -p 8000:8000 -e RESET_DB=1 example-todo-fastapi:test
+# build image and run
+# use RESET_DB env var to reset db and load initial data
+# use --no-cache to force rebuild image every time
+docker build --no-cache -t example-todo-fastapi . && \
+docker run --rm --name example-todo-fastapi -p 8000:8000 -e RESET_DB=1 example-todo-fastapi
+# customize LOG_LEVEL=DEBUG
+docker run --rm --name example-todo-fastapi -p 8000:8000 -e RESET_DB=1 -e LOG_LEVEL=DEBUG example-todo-fastapi
 ```
 
-test container endpoints:
+Test container endpoints:
 
 ```sh
-curl -X 'GET' 'http://127.0.0.1/health' -H 'accept: application/json'
+curl -X 'GET' 'http://127.0.0.1:8000/health' -H 'accept: application/json'
 # fetch openapi doc and pretty print
-curl -X 'GET' 'http://127.0.0.1/openapi.json' -H 'accept: application/json' | jq
+curl -X 'GET' 'http://127.0.0.1:8000/openapi.json' -H 'accept: application/json' | jq
 ```
 
-or use browser to hit url: http://127.0.0.1/docs
+Or use browser to hit url: `http://127.0.0.1:8000/home` for web page access.
 
 ## docker-compose
 
@@ -129,7 +137,72 @@ Isort usually will break black formatting, so run isort first, then run black.
 isort . && black .
 ```
 
-## appendix: application boostrap
+## application boostrap with poetry
+
+Assume pyenv is installed in local development environment.
+
+The `pyenv local` command creates a `.python-version` file in the current directory.
+It is primarily for local development environments where pyenv is used to manage Python versions.
+In containerized deployments, the Python version is typically specified in the Dockerfile, making the .python-version file unnecessary for the container environment.
+However, it is still beneficial to include the .python-version file in source control for consistency in local development setups.
+
+```sh
+pyenv local 3.11
+python -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip poetry
+poetry init --no-interaction
+```
+
+If a stand-alone poetry (like brew installed poetry) is used, the
+`poetry install` command automatically creates a virtual environment if
+not already exists.
+This virtual environment is typically created in a directory within current
+user profile (e.g., ~/.cache/pypoetry/virtualenvs/).
+
+For local development, it is better to install poetry with pip in the existing
+virtual environment, and poetry will recognize the existing virtual environment
+and use it for package management. This allows both pip and poetry to point to
+the same virtual environment for package management.
+
+In a containerized deployment, the virtual environment is created by poetry
+with default location, which is fine for a container, as long as the python
+command is run by poetry to ensure the correct python interpreter is used.
+
+In created `pyproject.toml` file, set non-package mode, in order for poetry to
+only manage dependencies.
+
+```toml
+[tool.poetry]
+package-mode = false
+```
+
+Add dependencies:
+
+```sh
+poetry add isort black --dev
+poetry add sqlalchemy fastapi python-dotenv pydantic "pydantic[email]"
+# for view templates
+poetry add jinja2
+poetry add psycopg2-binary
+# introduce filelock to ensure single-process db migration operations
+poetry add filelock
+# install starlette session middleware
+poetry add starsessions
+# install multipart support for form and file post
+poetry add python-multipart
+# use gunicorn + unicorn standard extra package for production deployment
+poetry add uvicorn "uvicorn[standard]" gunicorn
+# install passlib for password hashing
+# choose bcrypt as password hashing algorithm
+# ref: https://en.wikipedia.org/wiki/Bcrypt
+poetry add "passlib[bcrypt]"
+# install cryptography lib python-jose for jwt
+# JOSE stands for JavaScript Object Signing and Encryption
+poetry add "python-jose[cryptography]"
+```
+
+## appendix: application boostrap with (pip + requirements.txt)
 
 Application dependencies:
 

@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "example-todo-fastapi"
+version = "0.1.0"
+description = ""
+authors = ["Bin Le <bin.le.code@gmail.com>"]
+readme = "README.md"
+# use Poetry only for dependency management but not for packaging
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.11.0,<3.12"
+sqlalchemy = "^2.0.36"
+fastapi = "^0.115.6"
+python-dotenv = "^1.0.1"
+starsessions = "^2.2.1"
+python-multipart = "^0.0.20"
+pydantic = {extras = ["email"], version = "^2.10.4"}
+uvicorn = {extras = ["standard"], version = "^0.34.0"}
+gunicorn = "^23.0.0"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+psycopg2-binary = "^2.9.10"
+filelock = "^3.16.1"
+jinja2 = "^3.1.5"
+
+
+[tool.poetry.group.dev.dependencies]
+isort = "^5.13.2"
+black = "^24.10.0"
+

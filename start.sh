@@ -8,7 +8,13 @@ fi
 echo "RESET_DB: $RESET_DB"
 echo "UPDATE_DB: $UPDATE_DB"
 
-# general gunicorn config is in /code/gunicorn_conf.py
-export GUNICORN_CONF=${GUNICORN_CONF:-"gunicorn_conf.py"}
+# add gunicorn_conf.py file to gunicorn config
+export GUNICORN_CONF=${GUNICORN_CONF:-"./gunicorn_conf.py"}
+# set default worker class
 export WORKER_CLASS=${WORKER_CLASS:-"uvicorn.workers.UvicornWorker"}
-exec gunicorn app.main:app -k "$WORKER_CLASS" -c "$GUNICORN_CONF"
+
+# run this command with pip + requirements.txt package management
+# exec gunicorn app.main:app -k "$WORKER_CLASS" -c "$GUNICORN_CONF"
+
+# run this command with poetry + pyproject.toml package management
+exec poetry run gunicorn app.main:app -k "$WORKER_CLASS" -c "$GUNICORN_CONF"
