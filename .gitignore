@@ -29,6 +29,8 @@ docs_build
 docs.zip
 archive.zip
 *.lock
+# exclude poetry.lock from gitignore
+!poetry.lock
 .env
 *.env
 
