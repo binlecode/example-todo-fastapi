@@ -41,7 +41,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Todo App with FastAPI",
-    version="0.3",
+    version="0.4.0",
     dependencies=[],
     lifespan=lifespan,
 )
