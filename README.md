@@ -30,17 +30,18 @@ poetry install
 # verify poetry attached virtual environment
 poetry env info | grep Path
 
-# run app with uvicorn
-# by default, only *.py files are watched for changes, include *.html files too
-uvicorn app.main:app --reload --reload-include "*.html"
-# run with a more verbose format
-uvicorn --reload --host $HOST --port $PORT --log-level $LOG_LEVEL "$APP_MODULE"
-
+# run app with fastapi cli
+# under the hood, fastapi cli uses built-in uvicorn to run the app
+# run fastapi dev mode for development
+poetry run fastapi dev
 # reset db during app start up
-RESET_DB=1 uvicorn app.main:app --reload
+RESET_DB=1 poetry run fastapi dev
 # update or create db during app start up, this is for incremental db migration
 # and it does not load initial data
-UPDATE_DB=1 uvicorn app.main:app  --reload
+UPDATE_DB=1 poetry run fastapi dev
+
+# run fastapi run for production
+poetry run fastapi run
 ```
 
 ## SwaggerUI with Openapi doc
@@ -180,19 +181,18 @@ package-mode = false
 Add dependencies:
 
 ```sh
-poetry add isort black --dev
-poetry add sqlalchemy fastapi python-dotenv pydantic "pydantic[email]"
-# for view templates
+poetry add ruff --dev
+# add fastapi[standard] extra package for fastapi cli and other tools
+poetry add fastapi "fastapi[standard]"
+poetry add sqlalchemy python-dotenv psycopg2-binary
+poetry add pydantic "pydantic[email]"
 poetry add jinja2
-poetry add psycopg2-binary
 # introduce filelock to ensure single-process db migration operations
 poetry add filelock
 # install starlette session middleware
 poetry add starsessions
 # install multipart support for form and file post
 poetry add python-multipart
-# use gunicorn + unicorn standard extra package for production deployment
-poetry add uvicorn "uvicorn[standard]" gunicorn
 # install passlib for password hashing
 # choose bcrypt as password hashing algorithm
 # ref: https://en.wikipedia.org/wiki/Bcrypt
