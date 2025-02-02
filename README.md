@@ -87,6 +87,48 @@ curl -X 'GET' 'http://127.0.0.1:8000/openapi.json' -H 'accept: application/json'
 
 Or use browser to hit url: `http://127.0.0.1:8000/home` for web page access.
 
+## build multi-platform images and push to dockerhub image registry
+
+In MacOS, run docker buildx to build multi-platform images for x86 amd64 and
+arm64. The docker images in docker hub can be deployed to a remote server
+such as a kubetnetes cluster.
+
+Use `latest` version tag for the image to push to dockerhub.
+
+```sh
+# check docker buildx builder instances
+docker buildx ls
+# if there's only one builder instance, need to create another builder
+# instance to support parallel multi-platform builds
+docker buildx create --name mybuilder
+# use the builder instance
+docker buildx use mybuilder
+
+# dockerhub login with access token in shell env var
+# docker login --username=ikalidocker --password=$DOCKERHUB_TOKEN
+# recommended, more secure to use stdin pipe to pass token
+echo $DOCKERHUB_TOKEN | docker login --username=ikalidocker --password-stdin
+
+# if there are multiple builders active, run multi-platform builds and push in one cli
+docker buildx build --platform linux/amd64,linux/arm64 -t ikalidocker/example-todo-fastapi:latest --push .
+```
+
+Building image and pushing to dockerhub registry within one docker command has
+the advantage that docker will automatically add platform metadata to the
+built image. This is useful for kubernetes deployment, where the kubernetes
+cluster will automatically pull the correct image for the platform it runs on.
+
+To test run a container from dockerhub image:
+
+```sh
+docker pull ikalidocker/example-todo-fastapi:latest
+docker run --rm --name example-todo-fastapi -p 8000:8000 -e RESET_DB=1 \
+    ikalidocker/example-todo-fastapi:latest
+
+# check if the app is running in the sub-mounted path
+curl http://localhost:8000/health
+```
+
 ## docker-compose
 
 ```sh
