@@ -121,11 +121,11 @@ cluster will automatically pull the correct image for the platform it runs on.
 To test run a container from dockerhub image:
 
 ```sh
-docker pull ikalidocker/example-todo-fastapi:latest
+docker pull ikalidocker/example-todo-fastapi:latest && \
 docker run --rm --name example-todo-fastapi -p 8000:8000 -e RESET_DB=1 \
     ikalidocker/example-todo-fastapi:latest
 
-# check if the app is running in the sub-mounted path
+# check app is running
 curl http://localhost:8000/health
 ```
 
