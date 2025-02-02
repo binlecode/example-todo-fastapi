@@ -6,6 +6,21 @@ on:
 env:
   DOCKER_BUILDKIT: 1
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with: 
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install poetry && poetry install --no-root
+      - name: Check format and lint rules
+        run: ruff check
   # build with manual push
   # build-and-push:
   #   runs-on: ubuntu-latest
