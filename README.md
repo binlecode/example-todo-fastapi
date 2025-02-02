@@ -30,17 +30,18 @@ poetry install
 # verify poetry attached virtual environment
 poetry env info | grep Path
 
-# run app with uvicorn
-# by default, only *.py files are watched for changes, include *.html files too
-uvicorn app.main:app --reload --reload-include "*.html"
-# run with a more verbose format
-uvicorn --reload --host $HOST --port $PORT --log-level $LOG_LEVEL "$APP_MODULE"
-
+# run app with fastapi cli
+# under the hood, fastapi cli uses built-in uvicorn to run the app
+# run fastapi dev mode for development
+poetry run fastapi dev
 # reset db during app start up
-RESET_DB=1 uvicorn app.main:app --reload
+RESET_DB=1 poetry run fastapi dev
 # update or create db during app start up, this is for incremental db migration
 # and it does not load initial data
-UPDATE_DB=1 uvicorn app.main:app  --reload
+UPDATE_DB=1 poetry run fastapi dev
+
+# run fastapi run for production
+poetry run fastapi run
 ```
 
 ## SwaggerUI with Openapi doc
@@ -62,42 +63,12 @@ the schema (pydantic model) has to load custom config with
 If container is behind a TLS Termination Proxy (load balancer) like Nginx
 or Traefik, add the option `--proxy-headers` to the CMD.
 
-This option tells Uvicorn to trust the headers sent by that proxy telling it
+This option tells fastapi to trust the headers sent by that proxy telling it
 that the application is running behind HTTPS.
-
-See [unicorn-start-reload](./start-uvicorn.sh) shell script for details.
-
-This should be fine for simple use cases where the load is light and container
-resource is limited as as dev docker engine.
-
-For production deployment, we should consider multi-process service
-in a container.
-It is best practice to use Gunicorn to manage Uvicorn worker-class processes
-in production deployment:
-
--   Gunicorn serves as a process manager, it can recycle dead processes
-    and restart new processes
--   Uvicorn works as a Gunicorn compatible worker class, so that uvicorn
-    worker processes are managed by Gunicorn
-
-Ref: https://fastapi.tiangolo.com/deployment/server-workers/#gunicorn-with-uvicorn-workers
-
-With multiple cpu cores available, the start CMD can be:
-
-```sh
-# use UPDATE_DB=1 to update db schema instead of reset and load initial data
-LOG_LEVEL=DEBUG RESET_DB=1 gunicorn app.main:app --workers 2 --worker-class \
-  uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --log-level debug --reload
-```
-
-A [start.sh](./start.sh) script is created to run gunicorn in a container.
-In that script, a [gunicorn_conf.py](./gunicorn_conf.py) file is used to
-set configurations adaptive to the container resource.
 
 Build docker image with [Dockerfile](./Dockerfile), and run locally:
 
 ```sh
-# build image and run
 # use RESET_DB env var to reset db and load initial data
 # use --no-cache to force rebuild image every time
 docker build --no-cache -t example-todo-fastapi . && \
@@ -116,6 +87,48 @@ curl -X 'GET' 'http://127.0.0.1:8000/openapi.json' -H 'accept: application/json'
 
 Or use browser to hit url: `http://127.0.0.1:8000/home` for web page access.
 
+## build multi-platform images and push to dockerhub image registry
+
+In MacOS, run docker buildx to build multi-platform images for x86 amd64 and
+arm64. The docker images in docker hub can be deployed to a remote server
+such as a kubetnetes cluster.
+
+Use `latest` version tag for the image to push to dockerhub.
+
+```sh
+# check docker buildx builder instances
+docker buildx ls
+# if there's only one builder instance, need to create another builder
+# instance to support parallel multi-platform builds
+docker buildx create --name mybuilder
+# use the builder instance
+docker buildx use mybuilder
+
+# dockerhub login with access token in shell env var
+# docker login --username=ikalidocker --password=$DOCKERHUB_TOKEN
+# recommended, more secure to use stdin pipe to pass token
+echo $DOCKERHUB_TOKEN | docker login --username=ikalidocker --password-stdin
+
+# if there are multiple builders active, run multi-platform builds and push in one cli
+docker buildx build --platform linux/amd64,linux/arm64 -t ikalidocker/example-todo-fastapi:latest --push .
+```
+
+Building image and pushing to dockerhub registry within one docker command has
+the advantage that docker will automatically add platform metadata to the
+built image. This is useful for kubernetes deployment, where the kubernetes
+cluster will automatically pull the correct image for the platform it runs on.
+
+To test run a container from dockerhub image:
+
+```sh
+docker pull ikalidocker/example-todo-fastapi:latest && \
+docker run --rm --name example-todo-fastapi -p 8000:8000 -e RESET_DB=1 \
+    ikalidocker/example-todo-fastapi:latest
+
+# check app is running
+curl http://localhost:8000/health
+```
+
 ## docker-compose
 
 ```sh
@@ -128,13 +141,12 @@ docker compose down
 docker compose down --rmi all --volumes
 ```
 
-## other development notes
+## code format and linting
 
-To format code, use black and isort.
-Isort usually will break black formatting, so run isort first, then run black.
+Use ruff for code formatting and linting.
 
 ```sh
-isort . && black .
+ruff check --fix
 ```
 
 ## application boostrap with poetry
@@ -180,19 +192,18 @@ package-mode = false
 Add dependencies:
 
 ```sh
-poetry add isort black --dev
-poetry add sqlalchemy fastapi python-dotenv pydantic "pydantic[email]"
-# for view templates
+poetry add ruff --dev
+# add fastapi[standard] extra package for fastapi cli and other tools
+poetry add fastapi "fastapi[standard]"
+poetry add sqlalchemy python-dotenv psycopg2-binary
+poetry add pydantic "pydantic[email]"
 poetry add jinja2
-poetry add psycopg2-binary
 # introduce filelock to ensure single-process db migration operations
 poetry add filelock
 # install starlette session middleware
 poetry add starsessions
 # install multipart support for form and file post
 poetry add python-multipart
-# use gunicorn + unicorn standard extra package for production deployment
-poetry add uvicorn "uvicorn[standard]" gunicorn
 # install passlib for password hashing
 # choose bcrypt as password hashing algorithm
 # ref: https://en.wikipedia.org/wiki/Bcrypt

@@ -41,7 +41,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Todo App with FastAPI",
-    version="0.3",
+    version="0.4.0",
     dependencies=[],
     lifespan=lifespan,
 )
@@ -146,7 +146,7 @@ async def login(request: Request):
 
 
 @app.post("/login", include_in_schema=False)
-async def login(
+async def post_login(
     request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
