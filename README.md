@@ -63,42 +63,12 @@ the schema (pydantic model) has to load custom config with
 If container is behind a TLS Termination Proxy (load balancer) like Nginx
 or Traefik, add the option `--proxy-headers` to the CMD.
 
-This option tells Uvicorn to trust the headers sent by that proxy telling it
+This option tells fastapi to trust the headers sent by that proxy telling it
 that the application is running behind HTTPS.
-
-See [unicorn-start-reload](./start-uvicorn.sh) shell script for details.
-
-This should be fine for simple use cases where the load is light and container
-resource is limited as as dev docker engine.
-
-For production deployment, we should consider multi-process service
-in a container.
-It is best practice to use Gunicorn to manage Uvicorn worker-class processes
-in production deployment:
-
--   Gunicorn serves as a process manager, it can recycle dead processes
-    and restart new processes
--   Uvicorn works as a Gunicorn compatible worker class, so that uvicorn
-    worker processes are managed by Gunicorn
-
-Ref: https://fastapi.tiangolo.com/deployment/server-workers/#gunicorn-with-uvicorn-workers
-
-With multiple cpu cores available, the start CMD can be:
-
-```sh
-# use UPDATE_DB=1 to update db schema instead of reset and load initial data
-LOG_LEVEL=DEBUG RESET_DB=1 gunicorn app.main:app --workers 2 --worker-class \
-  uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --log-level debug --reload
-```
-
-A [start.sh](./start.sh) script is created to run gunicorn in a container.
-In that script, a [gunicorn_conf.py](./gunicorn_conf.py) file is used to
-set configurations adaptive to the container resource.
 
 Build docker image with [Dockerfile](./Dockerfile), and run locally:
 
 ```sh
-# build image and run
 # use RESET_DB env var to reset db and load initial data
 # use --no-cache to force rebuild image every time
 docker build --no-cache -t example-todo-fastapi . && \
@@ -129,13 +99,12 @@ docker compose down
 docker compose down --rmi all --volumes
 ```
 
-## other development notes
+## code format and linting
 
-To format code, use black and isort.
-Isort usually will break black formatting, so run isort first, then run black.
+Use ruff for code formatting and linting.
 
 ```sh
-isort . && black .
+ruff check --fix
 ```
 
 ## application boostrap with poetry

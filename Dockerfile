@@ -10,24 +10,26 @@ ENV PYTHONUNBUFFERED=1
 # keep application content in a working directory
 WORKDIR /app
 
-# COPY requirements.txt requirements.txt
-# RUN pip install --no-cache-dir -r requirements.txt
-
-RUN pip install --no-cache-dir poetry
 COPY pyproject.toml poetry.lock ./
-RUN poetry install --no-root --no-dev
+RUN pip install --no-cache-dir poetry \
+    && poetry config virtualenvs.create false \
+    && poetry install --no-root --without dev
 
 # copy application code
 COPY app/ ./app/
-COPY config.py gunicorn_conf.py start.sh ./
-RUN chmod +x start.sh
+COPY config.py ./
 
-# run single-process uvicorn, for debug
-# if packages are installed by pip, use the following command
-# CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-# if packages are installed by poetry, use the following command
-# CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# default to UPDATE_DB=1
+ENV RESET_DB=0
+ENV UPDATE_DB=1
 
-# run multi-process gunicorn, for production
-CMD ["./start.sh"]
+# Run appliction in container, prefer single process per container.
+# This assumes the pod resource limit on CPU is less than 1.0.
+# To concurrent request scale, keep single process per container and increase 
+# replica size.
+# For cpu bound performance bottleneck, increase cpu limit to be close or equal
+# to 1.0, there's no benefit to increase cpu limit beyond 1.0. If bottleneck 
+# remains, consider a higer cpu machine type. 
+CMD ["poetry", "run", "fastapi", "run", "--host", "0.0.0.0", "--port", "8000"]
+
 
