@@ -61,4 +61,9 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ikalidocker/example-todo-fastapi:${{ github.sha }}
+          tags: |
+            ikalidocker/example-todo-fastapi:${{ github.sha }}
+            ikalidocker/example-todo-fastapi:latest
+          labels: |
+            org.opencontainers.image.source=${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
