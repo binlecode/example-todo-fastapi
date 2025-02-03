@@ -41,6 +41,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Todo App with FastAPI",
+    # Optionally, set a global url path prefix for all routes, which is useful 
+    # for deploying the app under a subpath, like k8s ingress.
+    # root_path="/todo-app",
     version="0.4.0",
     dependencies=[],
     lifespan=lifespan,
