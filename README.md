@@ -25,8 +25,12 @@ python -m venv .venv
 source .venv/bin/activate
 # install poetry with pip in the virtual environment
 pip install --upgrade pip poetry
-# poetry recognizes and installs dependencies in this virtual environment
-poetry install
+
+# poetry recognizes and installs dependencies in this existing virtual 
+# environment
+# use --no-root to skip installing this project as a package, since this is
+# not a package, but a stand-alone web app
+poetry install --no-root
 # verify poetry attached virtual environment
 poetry env info | grep Path
 
