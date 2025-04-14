@@ -19,33 +19,39 @@ This is a simple todo crud app
 
 ## run local app
 
+Latest fastapi supports run cli directly, and is recommended over uvicorn cli.
+Under the hood, fastapi cli uses built-in uvicorn to run the app.
+
 ```sh
 pyenv shell 3.11
 python -m venv .venv
 source .venv/bin/activate
-# install poetry with pip in the virtual environment
-pip install --upgrade pip poetry
+pip install uv
+uv pip install -r requirements.txt
 
-# poetry recognizes and installs dependencies in this existing virtual 
-# environment
-# use --no-root to skip installing this project as a package, since this is
-# not a package, but a stand-alone web app
-poetry install --no-root
-# verify poetry attached virtual environment
-poetry env info | grep Path
-
-# run app with fastapi cli
-# under the hood, fastapi cli uses built-in uvicorn to run the app
 # run fastapi dev mode for development
-poetry run fastapi dev
-# reset db during app start up
-RESET_DB=1 poetry run fastapi dev
-# update or create db during app start up, this is for incremental db migration
-# and it does not load initial data
-UPDATE_DB=1 poetry run fastapi dev
+uv run fastapi dev
 
-# run fastapi run for production
-poetry run fastapi run
+# reset db during app start up
+RESET_DB=1 uv run fastapi dev
+
+# create or update db during app start up, for incremental db changes
+# it does not load initial data
+UPDATE_DB=1 uv run fastapi dev
+
+# Legacy: Run uv with uvicorn cli with auto-reload for development
+uv run uvicorn app.main:app --reload --log-level debug
+
+# or, Set log level with env var
+LOG_LEVEL=DEBUG uv run uvicorn app.main:app --reload
+```
+
+## Running in production
+
+For production deployment, the uv command is:
+
+```bash
+uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4 --log-level info
 ```
 
 ## SwaggerUI with Openapi doc
@@ -64,9 +70,10 @@ the schema (pydantic model) has to load custom config with
 
 ## build and run container
 
+Ref: https://fastapi.tiangolo.com/deployment/docker/#create-the-fastapi-code
+
 If container is behind a TLS Termination Proxy (load balancer) like Nginx
 or Traefik, add the option `--proxy-headers` to the CMD.
-
 This option tells fastapi to trust the headers sent by that proxy telling it
 that the application is running behind HTTPS.
 
@@ -75,10 +82,10 @@ Build docker image with [Dockerfile](./Dockerfile), and run locally:
 ```sh
 # use RESET_DB env var to reset db and load initial data
 # use --no-cache to force rebuild image every time
+# use LOG_LEVEL=DEBUG
 docker build --no-cache -t example-todo-fastapi . && \
-docker run --rm --name example-todo-fastapi -p 8000:8000 -e RESET_DB=1 example-todo-fastapi
-# customize LOG_LEVEL=DEBUG
-docker run --rm --name example-todo-fastapi -p 8000:8000 -e RESET_DB=1 -e LOG_LEVEL=DEBUG example-todo-fastapi
+docker run --rm --name example-todo-fastapi -p 8000:8000 \
+    -e RESET_DB=1 -e LOG_LEVEL=DEBUG example-todo-fastapi
 ```
 
 Test container endpoints:
@@ -114,7 +121,9 @@ docker buildx use mybuilder
 echo $DOCKERHUB_TOKEN | docker login --username=ikalidocker --password-stdin
 
 # if there are multiple builders active, run multi-platform builds and push in one cli
-docker buildx build --platform linux/amd64,linux/arm64 -t ikalidocker/example-todo-fastapi:latest --push .
+docker buildx build --platform linux/amd64,linux/arm64 \
+    -t ikalidocker/example-todo-fastapi:latest \
+    --push .
 ```
 
 Building image and pushing to dockerhub registry within one docker command has
@@ -153,115 +162,41 @@ Use ruff for code formatting and linting.
 ruff check --fix
 ```
 
-## application boostrap with poetry
+## application boostrap
 
-Assume pyenv is installed in local development environment.
-
-The `pyenv local` command creates a `.python-version` file in the current directory.
-It is primarily for local development environments where pyenv is used to manage Python versions.
-In containerized deployments, the Python version is typically specified in the Dockerfile, making the .python-version file unnecessary for the container environment.
-However, it is still beneficial to include the .python-version file in source control for consistency in local development setups.
+Pyenv is used to set python version.
 
 ```sh
 pyenv local 3.11
 python -m venv .venv
 source .venv/bin/activate
-pip install --upgrade pip poetry
-poetry init --no-interaction
-```
+pip install uv
 
-If a stand-alone poetry (like brew installed poetry) is used, the
-`poetry install` command automatically creates a virtual environment if
-not already exists.
-This virtual environment is typically created in a directory within current
-user profile (e.g., ~/.cache/pypoetry/virtualenvs/).
+# Add dependencies:
 
-For local development, it is better to install poetry with pip in the existing
-virtual environment, and poetry will recognize the existing virtual environment
-and use it for package management. This allows both pip and poetry to point to
-the same virtual environment for package management.
-
-In a containerized deployment, the virtual environment is created by poetry
-with default location, which is fine for a container, as long as the python
-command is run by poetry to ensure the correct python interpreter is used.
-
-In created `pyproject.toml` file, set non-package mode, in order for poetry to
-only manage dependencies.
-
-```toml
-[tool.poetry]
-package-mode = false
-```
-
-Add dependencies:
-
-```sh
-poetry add ruff --dev
+uv pip install ruff
 # add fastapi[standard] extra package for fastapi cli and other tools
-poetry add fastapi "fastapi[standard]"
-poetry add sqlalchemy python-dotenv psycopg2-binary
-poetry add pydantic "pydantic[email]"
-poetry add jinja2
+uv pip install fastapi "fastapi[standard]"
+uv pip install sqlalchemy python-dotenv psycopg2-binary
+uv pip install pydantic "pydantic[email]"
+uv pip install jinja2
 # introduce filelock to ensure single-process db migration operations
-poetry add filelock
+uv pip install filelock
 # install starlette session middleware
-poetry add starsessions
+uv pip install starsessions
 # install multipart support for form and file post
-poetry add python-multipart
+uv pip install python-multipart
 # install passlib for password hashing
 # choose bcrypt as password hashing algorithm
 # ref: https://en.wikipedia.org/wiki/Bcrypt
-poetry add "passlib[bcrypt]"
+uv pip install "passlib[bcrypt]"
 # install cryptography lib python-jose for jwt
 # JOSE stands for JavaScript Object Signing and Encryption
-poetry add "python-jose[cryptography]"
+uv pip install "python-jose[cryptography]"
 ```
 
-## appendix: application boostrap with (pip + requirements.txt)
+Create or update requirements.txt.
 
-Application dependencies:
-
-```sh
-pyenv shell 3.11
-python -m venv .venv
-source .venv/bin/activate
-pip install --upgrade pip
-# install isort form import auto sorting
-pip install isort
-# install black for code formatting
-pip install black
-# use sqlalchemy for data models
-pip install sqlalchemy
-pip install fastapi
-pip install python-dotenv
-# install starlette session middleware
-pip install starsessions
-# install multipart support for form and file post
-pip install python-multipart
-pip install pydantic "pydantic[email]"
-pip install uvicorn
-# install gunicorn + unicorn standard extra package for deployment
-pip install "uvicorn[standard]" gunicorn
-# install passlib for password hashing
-# choose bcrypt as password hashing algorithm
-# ref: https://en.wikipedia.org/wiki/Bcrypt
-pip install "passlib[bcrypt]"
-# install cryptography lib python-jose for jwt
-# JOSE stands for JavaScript Object Signing and Encryption
-pip install "python-jose[cryptography]"
-# introduce filelock to ensure single-process db migration operations
-pip install filelock
-# for postgresql db
-pip install psycopg2-binary
-# for view templates
-pip install jinja2
-
-# save dependencies to requirements.txt
-pip freeze > requirements.txt
+```bash
+uv pip freeze > requirements.txt
 ```
-
-## References
-
-### fastapi docker github
-
-https://github.com/tiangolo/uvicorn-gunicorn-docker

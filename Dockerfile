@@ -8,16 +8,15 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 # keep application content in a working directory
-WORKDIR /app
+WORKDIR /code
 
-COPY pyproject.toml poetry.lock ./
-RUN pip install --no-cache-dir poetry \
-    && poetry config virtualenvs.create false \
-    && poetry install --no-root --without dev
+COPY ./requirements.txt /code/requirements.txt
+RUN pip install --no-cache-dir --upgrade pip uv && \
+    uv pip install --system --no-cache-dir -r requirements.txt
 
 # copy application code
-COPY app/ ./app/
-COPY config.py ./
+COPY ./app /code/app
+COPY config.py /code/config.py
 
 # default to UPDATE_DB=1
 ENV RESET_DB=0
@@ -30,6 +29,6 @@ ENV UPDATE_DB=1
 # For cpu bound performance bottleneck, increase cpu limit to be close or equal
 # to 1.0, there's no benefit to increase cpu limit beyond 1.0. If bottleneck 
 # remains, consider a higer cpu machine type. 
-CMD ["poetry", "run", "fastapi", "run", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["fastapi", "run", "app/main.py", "--host", "0.0.0.0", "--port", "8000"]
 
 
