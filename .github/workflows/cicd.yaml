@@ -18,9 +18,9 @@ jobs:
         with: 
           python-version: "3.11"
       - name: Install dependencies
-        run: pip install poetry && poetry install --no-root
+        run: pip install uv && uv pip install --system ruff
       - name: Check format and lint rules
-        run: poetry run ruff check
+        run: uv run ruff check
   # build with manual push
   # build-and-push:
   #   runs-on: ubuntu-latest
