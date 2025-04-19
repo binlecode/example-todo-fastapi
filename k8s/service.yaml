@@ -1,0 +1,23 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo-api-service
+  namespace: todo-api
+  labels:
+    app: todo-api
+spec:
+  selector:
+    app: todo-api
+  ports:
+  - port: 80
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  type: ClusterIP
+  # add session affinity for web sessions (web form, pages, etc.)
+  # Session affinity ensures a client's requests consistently go to the same pod
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3 hours

@@ -1,0 +1,10 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: todo-api-config
+  namespace: todo-api
+data:
+  # Add your environment variables here
+  LOG_LEVEL: "INFO"
+  RESET_DB: "1"

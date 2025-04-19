@@ -1,0 +1,35 @@
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: todo-api-hpa
+  namespace: todo-api
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: todo-api
+  minReplicas: 1
+  maxReplicas: 2
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 75
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    # Scale down: 300 seconds (5 minutes) prevents flapping by ensuring 
+    # load decrease is sustained.
+    scaleDown:
+      stabilizationWindowSeconds: 300
+    # Scale up: 60 seconds allows for relatively quick response to increased 
+    # demand while filtering out brief spikes.
+    scaleUp:
+      stabilizationWindowSeconds: 60

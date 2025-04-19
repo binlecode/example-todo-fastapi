@@ -56,11 +56,11 @@ uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4 --log-level i
 
 ## SwaggerUI with Openapi doc
 
-Openapi doc for REST endpoints is auto-generated at `http://<host>:<port>/docs`.
+Openapi doc for REST endpoints is auto-generated at `/docs`.
 
 ## Web pages url
 
-Web pages are built with Jinja2 templates, the home url is `http://<host>:<port>/home`.
+Web pages are built with Jinja2 templates, the home url is '/home`.
 
 ## pydantic
 
@@ -96,7 +96,7 @@ curl -X 'GET' 'http://127.0.0.1:8000/health' -H 'accept: application/json'
 curl -X 'GET' 'http://127.0.0.1:8000/openapi.json' -H 'accept: application/json' | jq
 ```
 
-Or use browser to hit url: `http://127.0.0.1:8000/home` for web page access.
+Use browser for web url: `http://127.0.0.1:8000/home`.
 
 ## build multi-platform images and push to dockerhub image registry
 
