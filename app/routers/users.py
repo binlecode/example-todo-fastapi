@@ -2,12 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.db import get_db
+from config import Config
 
 from .. import crud, schemas
 from ..models import User
 from .auth import get_current_user_by_token
 
-router = APIRouter(prefix="/api/users", dependencies=[])
+router = APIRouter(prefix=f"{Config.API_PREFIX}/users", dependencies=[])
 
 
 @router.post("/signup", response_model=schemas.UserRead)

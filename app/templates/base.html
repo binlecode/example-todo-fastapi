@@ -116,7 +116,7 @@
     function loadTodos(page) {
       var offset = (page - 1) * pageLimit;
       $.ajax({
-        url: '/api/todos/?user_id=' + current_user_id,
+        url: '{{ config.API_PREFIX }}/todos/?user_id=' + current_user_id,
         type: 'GET',
         data: {
           offset: offset,

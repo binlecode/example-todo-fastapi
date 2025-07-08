@@ -1,19 +1,21 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.db import get_db
+from config import Config
+
 from .. import crud, schemas
-from ..db import get_db
 from ..models import User
 from .auth import get_current_user_by_token
 
-router = APIRouter(prefix="/api/todos", dependencies=[])
+router = APIRouter(prefix=f"{Config.API_PREFIX}/todos", dependencies=[])
 
 
 # @router.get("/", response_model=list[schemas.TodoReadNested])
 @router.get("/", response_model=list[schemas.TodoRead])
 def read_todos(
     # user_id: int = Query(None, title="User ID", description="The ID of the user associated to the todos to view"),
-    user_id: int = None,
+    user_id: int | None = None,
     offset: int = 0,
     limit: int = 10,
     db: Session = Depends(get_db),
@@ -56,7 +58,7 @@ def create_todo(
 # secured by token
 @router.put("/{id}", response_model=schemas.TodoRead, status_code=status.HTTP_200_OK)
 def update_todo(
-    id: str,
+    id: int,
     todo_data: schemas.TodoUpdate,
     current_user: User = Depends(get_current_user_by_token),
     db: Session = Depends(get_db),

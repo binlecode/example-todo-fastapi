@@ -98,6 +98,9 @@ async def get_current_user_by_session_id(
 BASE_PATH = Path(__file__).resolve().parent
 TEMPLATES = Jinja2Templates(directory=str(BASE_PATH / "templates"))
 
+# Add config to template globals so it's available in all templates
+TEMPLATES.env.globals['config'] = Config
+
 
 # view routes should be excluded from swagger docs
 @app.get("/home", include_in_schema=False)

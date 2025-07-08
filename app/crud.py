@@ -49,7 +49,7 @@ def create_todo(db: Session, owner_user: User, todo_data: schemas.TodoCreate):
     return todo
 
 
-def update_todo(db: Session, id: str, todo_data: schemas.TodoUpdate):
+def update_todo(db: Session, id: int, todo_data: schemas.TodoUpdate):
     todo = db.query(Todo).filter(Todo.id == id).first()
     todo.text = todo_data.text
     todo.completed = todo_data.completed

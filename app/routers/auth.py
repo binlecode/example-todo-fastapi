@@ -5,6 +5,7 @@ from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from jose import JWTError
 from sqlalchemy.orm import Session
 
+from config import Config
 from .. import schemas
 from .. import crud
 from ..db import get_db
@@ -16,7 +17,7 @@ from ..security import (
     decode_access_token,
 )
 
-router = APIRouter(prefix="/api/auth", dependencies=[])
+router = APIRouter(prefix=f"{Config.API_PREFIX}/auth", dependencies=[])
 
 
 @router.post("/token", response_model=schemas.Token)
