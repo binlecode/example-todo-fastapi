@@ -2,9 +2,9 @@ from sqlalchemy.orm import Session
 
 from config import Config
 
-from . import schemas
-from .models import Todo, User
-from .security import get_password_hash
+from app import schemas
+from app.models import Todo, User
+from app.security import get_password_hash
 
 PAGINATION_LIMIT = Config.PAGINATION_LIMIT
 

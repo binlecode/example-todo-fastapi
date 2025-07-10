@@ -27,7 +27,7 @@ class Config(object):
     SECRET_KEY = os.getenv("SECRET_KEY") or "TOP SECRET"
     logger.info(f"SECRET_KEY: {SECRET_KEY[:8]}...")
 
-    API_PREFIX = os.environ.get("API_PREFIX", "/api")
+    API_PREFIX = os.environ.get("API_PREFIX", "/api/v1")
     logger.info(f"API_PREFIX: {API_PREFIX}")
 
     OAUTH2_TOKEN_URL = f"{API_PREFIX}/auth/token"

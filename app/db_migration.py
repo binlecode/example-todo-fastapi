@@ -1,8 +1,8 @@
 from functools import wraps
 from filelock import FileLock, Timeout
-from . import get_logger
-from .db import SessionLocal, engine
-from .models import Base, Todo, User
+from app import get_logger
+from app.db import SessionLocal, engine
+from app.models import Base, Todo, User
 
 # logging.basicConfig(level=Config.LOG_LEVEL)
 # logger = logging.getLogger(__name__)

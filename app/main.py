@@ -3,7 +3,7 @@ import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, Request, Depends, status
+from fastapi import APIRouter, FastAPI, Request, Depends, status
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
@@ -15,14 +15,14 @@ from starsessions import load_session
 
 from config import Config
 
-from . import get_logger
-from . import schemas
-from . import crud
-from .models import User
-from .security import authenticate_user
-from .db import get_db
-from .db_migration import reset_tables, update_tables
-from .routers import auth, todos, users
+from app import get_logger
+from app import schemas
+from app import crud
+from app.models import User
+from app.security import authenticate_user
+from app.db import get_db
+from app.db_migration import reset_tables, update_tables
+from app.routers import auth, todos, users
 
 logger = get_logger(__name__)
 
@@ -41,7 +41,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Todo App with FastAPI",
-    # Optionally, set a global url path prefix for all routes, which is useful 
+    # Optionally, set a global url path prefix for all routes, which is useful
     # for deploying the app under a subpath, like k8s ingress.
     # root_path="/todo-app",
     version="0.4.0",
@@ -99,7 +99,7 @@ BASE_PATH = Path(__file__).resolve().parent
 TEMPLATES = Jinja2Templates(directory=str(BASE_PATH / "templates"))
 
 # Add config to template globals so it's available in all templates
-TEMPLATES.env.globals['config'] = Config
+TEMPLATES.env.globals["config"] = Config
 
 
 # view routes should be excluded from swagger docs
@@ -186,9 +186,18 @@ def read_health():
     return {"name": "Todo App with FastAPI", "version": app.version}
 
 
+# define an API router with a prefix
+# this allows you to group API routes under a common prefix, like /api
+api_router = APIRouter(prefix=Config.API_PREFIX)
+# use include_router to concatenate sub-routers to the API router
+api_router.include_router(users.router)
+api_router.include_router(todos.router)
+# mount the API router to the main app
+app.include_router(api_router)
+
+# industrial best practice: separate auth routes from API routes
+# eg. standard OAuth2 endpoints use the /auth or /oauth prefix
 app.include_router(auth.router)
-app.include_router(users.router)
-app.include_router(todos.router)
 
 
 # flash messages helper to push messages to session for one-time display

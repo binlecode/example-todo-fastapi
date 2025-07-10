@@ -2,13 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from config import Config
 
-from .. import crud, schemas
-from ..models import User
-from .auth import get_current_user_by_token
+from app import crud, schemas
+from app.models import User
+from app.routers.auth import get_current_user_by_token
 
-router = APIRouter(prefix=f"{Config.API_PREFIX}/todos", dependencies=[])
+router = APIRouter(prefix="/todos", dependencies=[], tags=["Todos"])
 
 
 # @router.get("/", response_model=list[schemas.TodoReadNested])

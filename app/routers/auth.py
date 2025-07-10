@@ -6,18 +6,18 @@ from jose import JWTError
 from sqlalchemy.orm import Session
 
 from config import Config
-from .. import schemas
-from .. import crud
-from ..db import get_db
-from ..models import User
-from ..security import (
+from app import schemas
+from app import crud
+from app.db import get_db
+from app.models import User
+from app.security import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
     authenticate_user,
     create_access_token,
     decode_access_token,
 )
 
-router = APIRouter(prefix=f"{Config.API_PREFIX}/auth", dependencies=[])
+router = APIRouter(prefix="/auth", dependencies=[], tags=["Auth"])
 
 
 @router.post("/token", response_model=schemas.Token)

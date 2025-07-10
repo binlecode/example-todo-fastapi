@@ -8,7 +8,7 @@ from jose import jwt
 
 from config import Config
 
-from .models import User
+from app.models import User
 
 logging.basicConfig(level=Config.LOG_LEVEL)
 logger = logging.getLogger(__name__)
